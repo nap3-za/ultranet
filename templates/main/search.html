@@ -1,0 +1,313 @@
+{% extends 'account/base.html' %}
+{% load static %}
+
+{% block title %}
+User search
+{% endblock title %}
+
+{% block content %}
+
+<style type="text/css">
+	.profile-image{
+		max-height: 100px;
+		max-width: 100px;
+	}
+	.card{
+		border-radius: 12px;
+	}
+	.dropdown-toggle::after { 
+		content: none; 
+	}
+
+	.checkmark-icon{
+		color: green;
+	}
+	.cancel-icon{
+		color: red;
+	}
+</style>
+
+<div class="container px-1 py-1">
+	<div class="row justify-content-center">
+
+	<header class="">
+		<div class="container-fluid pt-3">
+			<div class="row justify-content-center">
+		
+				<div class="col-lg-12 col-xxl-12">
+					<div class="text-center mt-0 px-xl-3">
+						<p class="text-center">
+							Go to<br>
+						<a class="flex-fill btn btn-primary btn-sm mx-1" href="#accounts">Accounts</a>
+						<a class="flex-fill btn btn-primary btn-sm mx-1" href="#posts">Posts</a>
+						<a class="flex-fill btn btn-primary btn-sm mx-1" href="#polls">Polls</a>
+						<a class="flex-fill btn btn-primary btn-sm mx-1" href="#resources">Resources</a>
+						</p>
+					</div>
+				</div>
+
+				<form method="post" action="{% url 'search' %}">{% csrf_token %}
+					<input id="search_query" type="text" placeholder="Search..." name="search_query" class="form-control search-input">
+					
+					<div class="d-flex flex-row flex-nowrap">
+						<div class="flex-shrink-1">
+							<p class="tillium text-black text-decoration-underline text-center">Filter by : </p> 
+						</div>
+
+						<div class="flex-grow-1">
+							<select name="type" id="id_s_type" class="form-select">
+								<option value="Users" selected="">Users</option>
+								<option value="Posts">Posts</option>
+								<option value="Polls">Polls</option>
+								<option value="Resources">Resources</option>
+							</select>
+						</div>
+					</div>
+
+					<button class="btn btn-primary" type="submit">Go !!</button>
+				</form>
+			</div>
+		</div>
+	</header>
+
+	{% if accounts %}
+	<section class="col-12 col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xl-8 col-xxl-8 border rounded" id="accounts">
+		<div class="container">
+			<div class="row justify-content-center">
+				<h5 class="fw-bolder text-black py-2 text-center tillium">Accounts</h5>
+				{% for account in accounts %}
+				<div class="col-12">
+					<div class="d-flex flex-row">
+
+						<div class="flex-shrink-1">
+							<div class="m-1">
+								<img class="profile-image img-fluid" src="{{ account.0.profile_image.url }}" alt="">
+							</div>
+						</div>
+
+						<div class="flex-grow-1">
+							<div class="py-2">
+								<a href="{% url 'account:details' subject_username=account.0.username %}"><h4 class="card-title">{{account.0.username}}</h4></a>
+							</div>
+						</div>
+
+						<div class="flex-shrink-1">
+							<div class="py-2">
+								<!-- Them to me -->
+								{% if account.1.0 == -1 %}
+									<a onclick='triggerAcceptFriendRequest("{{account.1.1}}")'><i class="fa fa-check"></i></a>
+									<a onclick='triggerDeclineFriendRequest("{{account.1.1}}")'><i class="fa fa-cross"></i></a>
+								<!-- Friends -->
+								{% elif account.1 == 0 %}
+									<button class="btn app-btn-primary btn-sm" type="button" id="id_send_friend_request_btn" onclick="removeFriend('{{account.0.id}}')"><i class="fa fa-cross fa-lg"></i></button>
+								{% elif account.1 == 1 %}
+									<button class="btn app-btn-primary btn-sm" type="button" id="id_send_friend_request_btn" onclick="cancelFriendRequest('{{account.0.id}}')">Cancel</button>
+								{% elif account.1 == 10 %}
+									<button class="btn app-btn-primary btn-sm" type="button" id="id_send_friend_request_btn" onclick="sendFriendRequest('{{account.0.id}}')"><i class="fa fa-user-plus fa-lg"></i></button>
+								{% endif %}
+							</div>
+						</div>
+
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</section>
+	{% else %}
+	<section class="col-12 col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xl-8 col-xxl-8 border rounded" id="accounts">
+		<div class="container">
+			<div class="row justify-content-center">
+				<h5 class="fw-bolder text-black py-2 text-center tillium">No results for user accounts</h5>
+			</div>
+		</div>
+	</section>
+	{% endif %}
+
+
+	{% if posts %}
+	<section class="col-12 col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xl-8 col-xxl-8 border rounded" id="posts">
+		<div class="container">
+			<div class="row justify-content-center">
+				<h5 class="fw-bolder text-black py-2 text-center tillium">Posts</h5>
+				{% for post in posts %}
+				<div class="col-12">
+					<div class="d-flex flex-row">
+
+						{% if post.image %}
+						<div class="flex-shrink-1">
+							<div class="m-1">
+								<img class="profile-image img-fluid" src="{{ post.image.url }}" alt="">
+							</div>
+						</div>
+						{% endif %}
+
+						<div class="flex-grow-1">
+							<div class="py-2">
+								<a href="{% url 'blog:post' post_id=post.id %}"><h4 class="card-title">{{ post.title }}</h4></a>
+							</div>
+						</div>
+
+						<div class="flex-shrink-1">
+							<div class="py-2">
+								<small class="text-muted tillium">{{ post.timestamp.date }}</small>
+							</div>
+						</div>
+
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</section>
+	{% else %}
+	<section class="col-12 col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xl-8 col-xxl-8 border rounded" id="posts">
+		<div class="container">
+			<div class="row justify-content-center">
+				<h5 class="fw-bolder text-black py-2 text-center tillium">No results for posts</h5>
+			</div>
+		</div>
+	</section>
+	{% endif %}
+
+
+	{% if polls %}
+	<section class="col-12 col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xl-8 col-xxl-8 border rounded" id="polls">
+		<div class="container">
+			<div class="row justify-content-center">
+				<h5 class="fw-bolder text-black py-2 text-center tillium">Polls</h5>
+				{% for poll in polls %}
+				<div class="col-12 border rounded">
+					<div class="d-flex flex-row">
+
+						{% if poll.image %}
+						<div class="flex-shrink-1">
+							<div class="m-1">
+								<img class="profile-image img-fluid" src="{{ poll.image.url }}" alt="">
+							</div>
+						</div>
+						{% endif %}
+
+						<div class="flex-grow-1">
+							<div class="py-2">
+								<a href="{% url 'blog:poll' poll_id=poll.id %}"><h4 class="card-title">{{ poll.title }}</h4></a>
+							</div>
+						</div>
+
+						<div class="flex-shrink-1">
+							<div class="py-2">
+								<small class="text-muted tillium">{{ poll.timestamp.date }}</small>
+							</div>
+						</div>
+
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</section>
+	{% else %}
+	<section class="col-12 col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xl-8 col-xxl-8 border rounded" id="polls">
+		<div class="container">
+			<div class="row justify-content-center">
+				<h5 class="fw-bolder text-black py-2 text-center tillium">No results for polls</h5>
+			</div>
+		</div>
+	</section>
+	{% endif %}
+
+
+	{% if resources %}
+	<section class="col-12 col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xl-8 col-xxl-8 border rounded" id="resources">
+		<div class="container">
+			<div class="row justify-content-center">
+				<h5 class="fw-bolder text-black py-2 text-center tillium">Resources</h5>
+				{% for resource in resources %}
+				<div class="col-12">
+					<div class="d-flex flex-row">
+
+						{% if resource.image %}
+						<div class="flex-shrink-1">
+							<div class="m-1">
+								<img class="profile-image img-fluid" src="{{ resource.image.url }}" alt="">
+							</div>
+						</div>
+						{% endif %}
+
+						<div class="flex-grow-1">
+							<div class="py-2">
+								<a href="{% url 'feature:res_details' resource_id=resource.id %}"><h4 class="card-title">{{ resource.title }}</h4></a>
+							</div>
+						</div>
+
+						<div class="flex-shrink-1">
+							<div class="py-2">
+								<small class="text-muted tillium">{{ resource.timestamp.date }}</small>
+							</div>
+						</div>
+
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</section>
+	{% else %}
+	<section class="col-12 col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xl-8 col-xxl-8 border rounded" id="resources">
+		<div class="container">
+			<div class="row justify-content-center">
+				<h5 class="fw-bolder text-black py-2 text-center tillium">No results for resources</h5>
+			</div>
+		</div>
+	</section>
+	{% endif %}
+
+</div>	
+</div>
+
+
+<script type="text/javascript">
+
+	function triggerAcceptFriendRequest(friend_request_id){
+		acceptFriendRequest(friend_request_id)
+	}
+
+	function triggerDeclineFriendRequest(friend_request_id){
+		declineFriendRequest(friend_request_id)
+	}
+</script>
+
+{% if not is_friend and not is_self %}
+	{% include 'friend/send_jquery.html' %}
+	{% include 'friend/accept_jquery.html' %}
+	{% include 'friend/decline_jquery.html' %}
+	{% include 'friend/cancel_jquery.html' %}
+{% endif %}
+
+
+{% endblock content %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

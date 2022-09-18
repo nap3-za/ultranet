@@ -1,0 +1,560 @@
+{% load static %}
+
+<script type="text/javascript">
+	var mainSock = null;
+
+	function delete_chat() {
+		if (confirm("Are you shure you want to delete this chat ?? , this is ireversible")) {
+			var btn = document.getElementById("delete_{{ room.id }}")
+			btn.href= "{% url 'chat:private_delete' room_id=room.id %}";
+			btn.onclick = ""
+			btn.click()
+			// body...
+		}
+	}
+
+	onStart()
+
+	
+	function onStart(){
+		console.log("On start")
+		{% if room %}
+			console.log("Room is available")
+			if("{{room.user2}}" == "{{request.user}}"){
+				setupMainSock("{{ room.id }}")
+			}
+			else{
+				setupMainSock("{{ room.id }}")
+			}
+		{% else %}
+			console.log("No room")
+			{% if m_and_f %}
+				createOrReturnPrivateChat("{{m_and_f.0.friend.id}}")
+			{% endif %}
+		{% endif %}
+		{% for x in m_and_f %}
+			preloadImage("{{x.friend.profile_image.url|safe}}", "id_friend_img_{{x.friend.id}}")
+		{% endfor %}
+	}
+
+
+
+	function setupMainSock(room_id){
+		roomId = room_id
+		// Correctly decide between ws:// and wss://
+		var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+		{% if debug_mode %}
+			var ws_path = ws_scheme + '://' + window.location.host + "/private_chat/" + roomId + "/"; // development
+		{% else %}
+			var ws_path = ws_scheme + '://' + window.location.host + ":8001/private_chat/" + roomId + "/"; // production
+		{% endif %}
+		
+		mainSock = new ReconnectingWebSocket(ws_path);
+		
+		// Handle incoming messages
+		mainSock.onmessage = function(message) {
+			// Decode the JSON
+			// console.log("Got chat websocket message " + message.data);
+			
+			var data = JSON.parse(message.data);
+
+			// display the progress bar?
+			displayChatroomLoadingSpinner(data.display_progress_bar)
+
+			// Handle errors (ClientError)
+			if (data.error) {
+				console.error(data.error + ": " + data.message)
+				showClientErrorModal(data.message)
+				return;
+			}
+			// Handle joining (Client perspective)
+			if (data.setup_room) {
+				console.log("Setting up the room");
+				getUserInfo()
+				getRoomChatMessages()
+				enableChatLogScrollListener()
+			}
+			// user info coming in from backend
+			if(data.user_info){
+				handleUserInfoPayload(data.user_info)
+			}
+			// Handle getting a message
+			if (data.msg_type == 0 || data.msg_type == 1 || data.msg_type == 2) {
+				appendChatMessage(data, false, true)
+				
+			}
+
+			if (data.noti == "true") {
+				if (data["receiver"] == "{{ request.user.username }}"){
+					getNotification()
+				}
+			}
+			if (data.noti_payload) {
+				handleNotificationsPayload(data.notifications)
+			}
+
+			// new payload of messages coming in from backend
+			if(data.messages_payload){
+				handleMessagesPayload(data.messages, data.new_page_number)
+			}
+		};
+
+		mainSock.addEventListener("open", function(e){
+			
+			// join chat room
+			if("{{request.user.is_authenticated}}"){
+				mainSock.send(JSON.stringify({
+					"command": "join",
+					"room_id": "{{room.id }}",
+					"room_type": "private_channel",
+					"skip": "false"
+				}));
+			}
+		})
+
+		mainSock.addEventListener("close", function(e){
+			
+			// join chat room
+			if("{{request.user.is_authenticated}}"){
+				mainSock.send(JSON.stringify({
+					"command": "leave",
+					"room_id": "{{ room.id }}",
+					"room_type": "private_channel",
+				}));
+			}
+		})
+
+		mainSock.onclose = function(e) {
+			console.log('Chat socket closed.');
+		};
+
+		mainSock.onOpen = function(e){
+			console.log("ChatSocket onOpen", e)
+		};
+
+		mainSock.onerror = function(e){
+	        //console.log('ChatSocket error', e)
+	    };
+		
+	}
+
+	function closeWebSocket(){
+		if(mainSock != null){
+			mainSock.close()
+			mainSock = null
+		}
+	}
+	
+
+
+	function handleNotificationsPayload(notifications) {
+		notifications.forEach(function(notification){
+			appendNoti(notification, from_socket=false)
+	})}
+
+	function getNotification() {
+		mainSock.send(JSON.stringify({
+			"command": "get_notification",
+		}));		
+	}
+
+
+	document.querySelector('#id_chat_message_input').focus();
+	document.querySelector('#id_chat_message_input').onkeyup = function(e) {
+		if (e.keyCode === 13 && e.shiftKey) {  // enter + return
+			// Handled automatically by textarea
+		}
+		else if(e.keyCode === 13 && !e.shiftKey){ // enter + !return
+			document.getElementById('id_chat_message_submit').click();
+		}
+	};
+
+    document.getElementById('id_chat_message_submit').onclick = function(e) {
+		const messageInputDom = document.getElementById('id_chat_message_input');
+		const message = messageInputDom.value;
+		mainSock.send(JSON.stringify({
+			"command": "chat",
+			"type": "send_private_msg",
+			"message": message,
+			"room_id": "{{ room.id }}",
+		}));
+		messageInputDom.value = '';
+	};
+
+
+
+
+
+	/*
+		Retrieve the user information of the user other in the chat.
+		1. Profile image
+		2. username
+		3. etc...
+	*/
+	function getUserInfo(){
+		mainSock.send(JSON.stringify({
+			"command": "chat",
+			"type": "get_user_info",
+			"room_id": "{{ room.id }}",
+		}));
+	}
+
+	function handleUserInfoPayload(user_info){
+		document.getElementById("id_other_username").innerHTML = user_info['username']
+		document.getElementById("id_other_user_profile_image").classList.remove("d-none")
+		document.getElementById("id_user_info_container").href= "{% url 'account:details' subject_username=53252623623632623 %}".replace("53252623623632623", user_info['username'])
+		preloadImage(user_info['profile_image'], "id_other_user_profile_image")
+	}
+
+	function showClientErrorModal(message){
+		document.getElementById("id_client_error_modal_body").innerHTML = message
+		document.getElementById("id_trigger_client_error_modal").click()
+	}
+
+	function appendChatMessage(data, maintainPosition, isNewMessage){
+		messageType = data['msg_type']
+		msg_id = data['msg_id']
+		message = data['message']
+		uName = data['username']
+		user_id = data['user_id']
+		profile_image = data['profile_image']
+		timestamp = data['natural_timestamp']
+		seen_timestamp = data['seen_timestamp']
+		console.log("append chat message: " + messageType)
+		
+		var msg = "";
+		var username = ""
+		
+		// determine what type of msg it is
+		switch (messageType) {
+			case 0:
+				// new chatroom msg
+				username = uName
+				msg = message + '\n'
+				createChatMessageElement(msg, msg_id, username, profile_image, user_id, timestamp, seen_timestamp, maintainPosition, isNewMessage)
+				
+				break;
+			case 1:
+				// User joined room
+				createConnectedDisconnectedElement(message, msg_id, profile_image, user_id)
+				break;
+			case 2:
+				// User left room
+				createConnectedDisconnectedElement(message, msg_id, profile_image, user_id)
+				break;
+			default:
+				console.log("Unsupported message type!");
+				return;
+		}
+		// if (data["new"] == "True") {
+		// 	sendNotification(channel_name="{{ channel.name }}", msg_id=msg_id)
+		// }
+	}
+
+	/*
+		Build a new ChatMessage element and append to the list
+	*/
+
+	function appendNoti(data, from_socket) {
+		var noti_parent = document.getElementById("noti_container")
+		var noti_container = document.createElement("div")
+		noti_container.classList.add("item")
+		noti_container.classList.add("p-3")
+
+		var noti_content = document.createElement("div")
+		noti_content.classList.add("row")
+		noti_content.classList.add("gx-2")
+		noti_content.classList.add("justify-content-between")
+		noti_content.classList.add("align-items-center")
+
+		var pp_container = document.createElement("div")
+		pp_container.classList.add("col-auto")
+
+		var profileImage = document.createElement("img")
+		profileImage.classList.add("profile-image")
+		profileImage.classList.add("rounded-circle")
+		profileImage.classList.add("img-fluid")
+		profileImage.src = "{% static '567543567' %}".replace("567543567", data["profile_image"])
+
+		pp_container.appendChild(profileImage)
+		noti_content.appendChild(pp_container)
+
+		var noti_verb = document.createElement("div")
+		noti_verb.classList.add("col")
+		
+		var info_div = document.createElement("div")
+		info_div.classList.add("info")
+
+		var desc = document.createElement("div")
+		desc.classList.add("desc")
+		desc.innerHTML = data["notification_content"]
+
+		var meta = document.createElement("div")
+		meta.classList.add("meta")
+		meta.innerHTML = data["natural_timestamp"]
+
+		info_div.appendChild(desc)
+		info_div.appendChild(meta)
+		noti_verb.appendChild(info_div)
+
+		noti_content.appendChild(noti_verb)
+		noti_container.appendChild(noti_content)
+		noti_parent.appendChild(noti_container)
+
+		if (from_socket) {
+			var noti_icon = document.getElementById("noti_icon")
+			noti_icon.classList.add("text-primary")
+			noti_icon.innerHTML = "notifications_active"
+			
+			setTimeout(function () {
+				noti_icon.classList.remove("text-primary")
+				noti_icon.innerHTML = "notifications"
+			},700)
+		}
+
+	}
+
+	function createChatMessageElement(msg, msg_id, username, profile_image, user_id, timestamp, seen_timestamp, maintainPosition, isNewMessage){
+		var chatLog = document.getElementById("id_chat_log")
+
+		var newMessageDiv = document.createElement("div")
+		if (username == "{{request.user.username}}") {
+			newMessageDiv.classList.add("chat-message-right")
+		}
+		else {
+			newMessageDiv.classList.add("chat-message-left")
+		}
+		newMessageDiv.classList.add("pb-4")
+
+		var profileImageContainer = document.createElement("div")
+		var profileImage = document.createElement("img")
+
+		profileImage.addEventListener("click", function(e){
+			selectUser(user_id)
+		});
+		profileImage.classList.add("rounded-circle");
+		profileImage.classList.add("mr-1");
+		profileImage.width = "40";
+		profileImage.height = "40";
+		profileImage.src = profile_image;
+
+		var profile_image_id = "id_profile_image_" + msg_id;
+		profileImage.id = profile_image_id;
+		profileImageContainer.appendChild(profileImage);
+		
+		// Tooltip that shows the timestamp
+
+		newMessageDiv.appendChild(profileImageContainer);
+
+		var contentDiv = document.createElement("div")
+		contentDiv.classList.add("flex-shrink-1");
+		contentDiv.classList.add("rounded");
+		contentDiv.classList.add("py-2");
+		contentDiv.classList.add("px-3");
+		contentDiv.classList.add("mr-3");
+		contentDiv.classList.add("bg-light");
+		 
+		var personDiv = document.createElement("div")
+		personDiv.classList.add("font-weight-bold")
+		personDiv.classList.add("mb-1")
+		if (username == "{{request.user.username}}") {
+			personDiv.innerHTML = "You";
+		}
+		else {
+			personDiv.innerHTML = username;
+		}
+		contentDiv.appendChild(personDiv);
+		contentDiv.innerHTML = msg;
+		newMessageDiv.appendChild(contentDiv)
+
+		newMessageDiv.addEventListener("click", function() {
+			contentDiv.innerHTML = ""
+			var timestamp_elem = document.createElement("p")
+			timestamp_elem.classList.add("bold")
+			timestamp_elem.classList.add("h6")
+			timestamp_elem.innerHTML = "sent : "+timestamp;
+			
+			contentDiv.appendChild(timestamp_elem)
+
+			var seen_elem = document.createElement("p")
+			seen_elem.classList.add("bold")
+			seen_elem.classList.add("h6")
+			seen_elem.innerHTML = "seen : "+seen_timestamp;
+			contentDiv.appendChild(seen_elem)
+
+			setTimeout(function() {
+				contentDiv.innerHTML = msg;
+				timestamp_elem = contentDiv.firstElementChild;
+				timestamp_elem.remove();
+				seen_elem = contentDiv.firstElementChild;
+				seen_elem.remove();
+
+			},2000)
+		})
+
+		if(isNewMessage){
+			chatLog.appendChild(newMessageDiv)
+			
+		}
+		else{
+			chatLog.insertBefore(newMessageDiv, chatLog.firstChild)
+		}
+		
+		if(!maintainPosition){
+			chatLog.scrollTop = chatLog.scrollHeight
+		}
+
+		preloadImage(profile_image, profile_image_id)
+	}
+
+	function createConnectedDisconnectedElement(msg, msd_id, profile_image, user_id){
+		var chatLog = document.getElementById("id_chat_log")
+
+		var newMessageDiv = document.createElement("div")
+		newMessageDiv.classList.add("chat-message-center")
+		newMessageDiv.classList.add("pb-4")
+
+		var contentDiv = document.createElement("div")
+		contentDiv.classList.add("flex-shrink-1");
+		contentDiv.classList.add("rounded");
+		contentDiv.classList.add("py-2");
+		contentDiv.classList.add("px-3");
+		contentDiv.classList.add("mr-3");
+		contentDiv.classList.add("bg-light");
+		 
+		var personDiv = document.createElement("div")
+		personDiv.classList.add("font-weight-bold")
+		personDiv.classList.add("mb-1")
+		contentDiv.appendChild(personDiv);
+		contentDiv.innerHTML = msg;
+		newMessageDiv.appendChild(contentDiv)
+		chatLog.insertBefore(newMessageDiv, chatLog.firstChild)
+ 	}
+
+ 	function setPageNumber(pageNumber){
+		document.getElementById("id_page_number").innerHTML = pageNumber
+	}
+
+	function clearChatLog(){
+		document.getElementById("id_chat_log").innerHTML = ""
+	}
+
+
+	function setPaginationExhausted(){
+		setPageNumber("-1")
+	}
+
+ 	/*
+		Retrieve the chat room messages given the page number.
+	*/
+	// OK
+	function getRoomChatMessages(){
+		var pageNumber = document.getElementById("id_page_number").innerHTML
+		if(pageNumber != "-1"){
+			setPageNumber("-1") // loading in progress
+			mainSock.send(JSON.stringify({
+				"command": "chat",
+				"type": "get_private_chat_messages",
+				"room_id": "{{ room.id }}",
+				"page_number": pageNumber,
+			}));
+		}
+	}
+
+	// function sendNotification(data) {
+	// 	mainSock.send(JSON.stringify({
+	// 		"command": "chat",
+	// 		"type": "send_notification",
+ //            "msg_id": data["msg_id"],
+ //            "sender": "{{ request.user.username }}",
+ //            "origin": "private_room",
+ //            "channel_name": "{{ receiver }}",
+	// 	}));
+	// }
+
+	// OK
+	function handleMessagesPayload(messages, new_page_number){
+		if(messages != null && messages != "undefined" && messages != "None"){
+			setPageNumber(new_page_number)
+			messages.forEach(function(message){
+				appendChatMessage(message, true, false)
+			})
+		}
+		else{
+			setPaginationExhausted() // no more messages
+		}
+	}
+
+
+	function selectUser(user_id){
+		// Weird work-around for passing arg to url
+		var url = "{% url 'account:details' subject_username=53252623623632623 %}".replace("53252623623632623", user_info['username'])
+		var win = window.open(url, "_blank")
+		win.focus()
+	}
+
+	/*
+		Get the next page of chat messages when scrolls to bottom
+	*/
+	function chatLogScrollListener(e) {
+		var chatLog = document.getElementById("id_chat_log")
+		if ((Math.abs(chatLog.scrollTop) + 2) >= (chatLog.scrollHeight - chatLog.offsetHeight)) {
+			getRoomChatMessages()
+		}
+	}
+
+	function closeWebSocket(socket){
+		if(socket != null){
+			socket.close()
+			socket = null
+		}
+	}
+
+	/*
+		Enable the function "chatLogScrollListener"
+	*/
+	function enableChatLogScrollListener(){
+		document.getElementById("id_chat_log").addEventListener("scroll", chatLogScrollListener);
+	}
+	
+	/*
+		Disable the function "chatLogScrollListener"
+	*/
+	function disableChatLogScrollListener(){
+		document.getElementById("id_chat_log").removeEventListener("scroll", chatLogScrollListener)
+	}
+
+	function displayChatroomLoadingSpinner(isDisplayed){
+		console.log("displayChatroomLoadingSpinner: " + isDisplayed)
+		var spinner = document.getElementById("id_chatroom_loading_spinner")
+		if(isDisplayed){
+			spinner.style.display = "block"
+		}
+		else{
+			spinner.style.display = "none"
+		}
+	}
+
+	function highlightFriend(userId){
+		// select new friend
+		var container = document.querySelector("#id_friend_container_320329320").replace("320329320",userId);
+		container.style.background = "#f2f2f2";
+		alert("done highlightFriend");
+
+	}
+
+	function clearHighlightedFriend(){
+		{% if m_and_f %}
+			{% for x in m_and_f %}
+				document.getElementById("id_friend_container_{{x.friend.id}}").style.background = ""
+			{% endfor %}
+		{% endif %}
+
+		// clear the profile image and username of current chat
+		document.getElementById("id_other_user_profile_image").classList.add("d-none")
+		document.getElementById("id_other_user_profile_image").src = "{% static 'codingwithmitch/dummy_image.png' %}"
+		document.getElementById("id_other_username").innerHTML = ""
+	}
+</script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+

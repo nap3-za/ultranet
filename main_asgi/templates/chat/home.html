@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title%}
+Chat 
+{% endblock %}
+
+{% block content %}
+<style type="text/css">
+  .bg-classic {
+      background-color: #061b44;
+  }
+  .bd-placeholder-img {
+    font-size: 1.125rem;
+    text-anchor: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+
+  @media (min-width: 768px) {
+  .bd-placeholder-img-lg {
+  font-size: 3.5rem;
+    }
+  }
+  .image-container{
+    max-width: 70px;
+    height: auto;
+  }
+    .pp-image {
+        width: 35px;
+        height: 35px;
+        margin: 7px 10px 7px 7px;
+    }
+    .ml-3 {
+        margin-left: 12px;
+    }
+    .font-size-m {
+        font-size: 25px;
+    }
+
+  .b-example-divider {
+    height: 3rem;
+    background-color: rgba(0, 0, 0, .1);
+    border: solid rgba(0, 0, 0, .15);
+    border-width: 1px 0;
+    box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+  }
+
+  .bi {
+    vertical-align: -.125em;
+    fill: currentColor;
+  }
+
+  .feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    font-size: 2rem;
+    color: #fff;
+    border-radius: .75rem;
+  }
+
+  .icon-link {
+    display: inline-flex;
+    align-items: center;
+  }
+  .icon-link > .bi {
+    margin-top: .125rem;
+    margin-left: .125rem;
+    transition: transform .25s ease-in-out;
+    fill: currentColor;
+  }
+  .icon-link:hover > .bi {
+    transform: translate(.25rem);
+  }
+
+  .icon-square {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.5rem;
+    border-radius: .75rem;
+  }
+
+  .rounded-4 { border-radius: .5rem; }
+  .rounded-5 { border-radius: 1rem; }
+
+  .text-shadow-1 { text-shadow: 0 .125rem .25rem rgba(0, 0, 0, .25); }
+  .text-shadow-2 { text-shadow: 0 .25rem .5rem rgba(0, 0, 0, .25); }
+  .text-shadow-3 { text-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .25); }
+
+  .card-cover {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+  }
+
+  .b-example-divider {
+    height: 3rem;
+    background-color: rgba(0, 0, 0, .1);
+    border: solid rgba(0, 0, 0, .15);
+    border-width: 1px 0;
+    box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+  }
+
+</style>
+<style type="text/css">
+{% include 'chat/chat.css' %}
+</style>
+
+<style text="text/css">
+.text-neon{
+    color:rgb(0,0,2) !important
+    }
+.text-neon{
+    text-shadow:0 0 6px rgba(111,66,193,.3),0 0 7px rgba(111,66,193,.3),0 0 10px rgba(111,66,193,.2);
+    text-decoration: italic;
+    }
+
+</style>
+<script src="{% static 'assets/jquery/jquery.min.js' %}"></script>
+
+
+
+<div class="container-fluid">
+    <div class="">
+        <div class="container-fluid ">
+            <div class="col-12">
+                <form class="row align-items-center" onsubmit="executePostQuery();">
+                    <div class="col-12">
+                        <div class="input-group">
+                            <input type="text" id="id_search_post" name="search" class="form-control " placeholder="Search your chatss">
+                            <button type="submit" class="btn input-group-append"><span class="material-icons">search</span></button>
+                        </div>
+                    </div>
+                </form>
+            </div><!--//col-->
+            {% if chats %}
+            <div cass="">
+              <ul class="list-group list-group-flush" id="chats-list">
+              {% for chat in chats %}
+                <li class="list-group-item border-bottom" onclick="createOrReturnPrivateChat('{{chat.2.id}}')">
+                    <div class="d-flex">
+                        <div class="d-flex flex-column">
+                            {% comment %} <span class="text-dark font-weight-bold mb-0 flex-shrink-1">
+                            <img class="pp-image border border-dark rounded rounded-circle" src="{{ chat.2.profile_image.url }}" alt="profile image" />
+                            </span> {% endcomment %}
+                        </div>
+                        
+
+                        <div class="d-flex flex-column p-0 m-0">
+                            <p>{% if chat.3 > 0 %}<small class="text-primary bold border border-primary rounded-circle p-2 pb-0 pt-0" id="unread_{{chat.2}}">{{ chat.3 }}</small>&nbsp;|&nbsp;{% endif %}<span class="{% if chat.3 > 0 %}text-neon underlined {% else %}text-dark{% endif %} bold  tillium h4" id="msg_{{chat.2.username}}">{{ chat.1.content|truncatechars:100 }}</span></p>
+                            <small class="">>> {{ chat.2.username }}</small>
+                        </div>
+                        <div class="d-flex flex-column flex-grow-1 pt-2">
+                            <small class="text-end ">{{ chat.1.timestamp.date }}</small>
+                            <small class="text-end bold" id="timestamp_{{chat.2.username}}">{{ chat.1.timestamp.time }}</small>
+                        </div>
+
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            
+            </div>
+            {% endif %}
+            <div class="d-flex flex-row flex-nowrap mt-3">
+              {% if potential_chats %}
+                <div class="flex-fill bg-dark rounded p-1 pt-0 pb-0 text-center m-1 mt-0 mb-0" data-bs-toggle="modal" data-bs-target="#chatBackdropLive" type="button">
+                  <span class="text-light"><button type="button" class="flex-fill btn"><span class="material-icons text-light">message</span></button>start chat</span>
+                  <div class="modal fade" id="chatBackdropLive" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="chatBackdropLiveLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="commentBackdropLiveLabel">Star new chat</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+
+                              <div class="card-header">
+                              </div>
+
+                              <div class="card-body mt-0 mb-0 p-0">
+                                {% if potential_chats %}
+                                  <ul class="list-group list-group-flush">
+                                    {% for potential in potential_chats %}
+                                      <li class="list-group-item border-bottom" onclick="createOrReturnPrivateChat('{{potential.id}}')">
+                                        <div class="d-flex flex-row flex-nowrap">
+                                          <div class="d-flex flex-column flex-shrink-1">
+                                            <span class="text-dark font-weight-bold mb-0 flex-shrink-1">
+                                            <img class="pp-image border border-dark rounded rounded-circle" src="{{ potential.profile_image.url }}" alt="profile image" />
+                                            </span>
+                                          </div>
+                                          <div class="d-flex flex-column flex-grow-1 pt-3 text-start">
+                                            <p class="text-bold tillium">{{ potential.username }}</p>
+                                          </div>
+                                        </div>
+                                      </li>
+                                    {% endfor %}
+                                  </ul>
+                                {% endif %}
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                  </div> 
+                {% for error in errors %}
+                <p style="color: red">{{ error }}</p>
+                {% endfor %}
+                </div>
+              {% endif %}
+              <div class="flex-fill bg-dark rounded {% if potential_chats %}pt-2{% else %}pt-2 pb-2{% endif %} text-center m-1 mt-0 mb-0">
+                <a class="" href="{% url 'chat:public_create' %}"><span class="text-light">create group chat</span></a>
+              </div>              
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% include 'chat/snippets/create_or_return_private_chat.html' %}
+<script src="{% static 'lib/reconnecting-websocket.js' %}"></script>
+{% include 'main_asgi/chats.html' %}
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+{% endblock %}

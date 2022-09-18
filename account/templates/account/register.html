@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Create an account
+{% endblock title %}
+
+{% block content %}
+
+<style type="text/css">
+		.bd-placeholder-img {
+		font-size: 1.125rem;
+		text-anchor: middle;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+	}
+	@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+	font-size: 3.5rem;
+		}
+	}
+	.image-container, .logo-icon{
+		max-width: 75px;
+		height: auto;
+	}
+
+</style>
+
+
+<div class="container-fluid mb-5">
+
+
+	<div class="row g-0 app-auth-wrapper">
+		<div class="col-12 auth-main-col text-center py-3">
+			<div class="d-flex flex-column align-content-end">
+				<div class=" mx-auto">	
+					<h2 class="auth-heading text-center">Sign up to Ultranet</h2>
+					<div class="app-auth-branding mb-4"><a class="app-logo" href="index.html"><img class="logo-icon me-2" src="{% static 'logos/light.svg' %}" alt="logo"></a></div>
+					
+					<div class="">
+						<form method="POST">
+							<div class="row justify-content-center">
+								<div class="col-lg-6 col-12">
+									{% csrf_token %}
+									<div class="form-floating my-1">
+										<input class="form-control" type="email" name="email" maxlength="254" autofocus="" required="" id="id_email">
+										<label for="floatingInput">Email address</label>
+									</div>
+	
+									<div class="form-floating my-1">
+										<input class="form-control" type="text" name="username" maxlength="30" required="" id="id_username">
+										<label for="floatingInput">A unique username</label>
+									</div>
+	
+	
+									<div class="form-floating my-1">
+										<input  class="form-control" type="text" name="name" maxlength="50" required="" id="id_name">
+										<label for="floatingInput">Name</label>
+									</div>
+	
+									<div class="form-floating my-1">
+										<input  class="form-control" type="text" name="surname" maxlength="50" required="" id="id_surname">
+										<label for="floatingInput">Surname</label>
+									</div>
+	
+
+	
+								</div>
+	
+								<div class="col-lg-6 col-12">
+	
+									<div class="form-floating my-1">
+										<input class="form-control" type="date" name="dob" required="" id="id_dob">
+										<label for="floatingInput">Date of birth</label>
+									</div>
+													
+									<div class="input-group mb-3 p-0">
+									<span class="input-group-text">Gender</span>
+									<select name="gender" id="id_gender" class="form-select form-control ">
+										<option value="Female">Female</option>
+										<option value="Male">Male</option>
+										<option value="Other">Other</option>
+									</select>
+									</div>
+	
+	
+									<div class="form-floating my-1">
+										<input class="form-control" type="password" name="password1" required="" id="id_password1">
+										<label for="floatingInput">Password</label>
+									</div>
+	
+									<div class="form-floating mb-3">
+										<input class="form-control" type="password" name="password2"  required="" id="id_password2">
+										<label for="floatingInput">Confirm password</label>
+									</div>
+								</div>
+	
+								<div class="col-lg-6 col-xl-6 col-xxl-6">
+									<div class="form-check mb-2">
+										<input class="form-check-input" name="accept" type="checkbox" id="disabledFieldsetCheck">
+										<label class="form-check-label" for="disabledFieldsetCheck">
+										I accept to Ultranet's&nbsp;<a href="{% url 'legal_docs_page' %}#privacy-policy" class="text-dark text-decoration-underline">privacy policies</a>&nbsp;,&nbsp;<a href="{% url 'legal_docs_page' %}#terms-of-use" class="text-dark text-decoration-underline">terms of use</a>&nbsp;,&nbsp;<a href="{% url 'legal_docs_page' %}#eua" class="text-dark text-decoration-underline">end user agreement</a>
+										</label>
+									</div>
+								</div>
+
+								<div class="col-12 border-top pt-3">
+	
+									{% for field in form %}
+									<p>
+									{% for error in field.errors %}
+									<p style="color: red">{{ error }}</p>
+									{% endfor %}
+									</p>
+									{% endfor %}
+									{% if form.non_field_errors %}
+									<div style="color: red">
+									<p>{{form.non_field_errors}}</p>
+									</div>
+									{% endif %}
+									<p class="text-center mb-2"><button class="btn app-btn-primary btn-sm" type="submit">Sign Up</button>&nbsp; or <a class="tillium text-decoration-underline fw-bold" href="{% url 'login' %}">sign in</a></p>
+								</div>
+							</div>
+						</form>
+						
+					</div><!--//auth-form-container-->	
+
+				</div><!--//auth-body-->
+			
+			</div><!--//flex-column-->   
+		</div><!--//auth-main-col-->
+
+	</div><!--//row-->
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{{ content_type }} details
+{% endblock title %}
+
+{% block content %}
+
+
+
+{% load static %}
+
+<style type="text/css">
+    .bd-placeholder-img {
+    	font-size: 1.125rem;
+    	text-anchor: middle;
+    	-webkit-user-select: none;
+    	-moz-user-select: none;
+    	user-select: none;
+    }
+
+    @media (min-width: 768px) {
+    .bd-placeholder-img-lg {
+    font-size: 3.5rem;
+    	}
+    }
+    .image-container{
+    	max-width: 70px;
+    	height: auto;
+    }
+    .pp-image {
+        width: 35px;
+        height: 35px;
+        margin: 7px 10px 7px 7px;
+    }
+    .ml-3 {
+        margin-left: 12px;
+    }
+    .font-size-m {
+        font-size: 25px;
+    }
+</style>
+
+<div class="container px-1 py-1" id="hanging-icons">
+    <div class="row py-3 row-cols-1 row-cols-lg-1 bg-light">
+        <div class="row m-2 mb-0 mt-0">
+            <div class="col-lg-7 col-md-12 col-sm-12 px-0 mx-0 ">
+                <div class="bg-white shadow-sm rounded">
+                    {% if content.title %}
+                        <p class="display-6 text-black text-center fw-bold">{{ content.title }}</p>
+                    {% endif %}
+                    <div class="px-1">
+                        {% if content_type == 'Poll' %}
+    						<div class="list rounded">
+    							{% for value in poll_values %}
+    							<div class="list-group-item list-group-item-action list-group-item-light"  onclick="triggerSelect({{value.0.id}});">
+    								<span class="text-black">{{ value.0.value }}</span>&nbsp;&nbsp;&nbsp;
+    								<span>( {{ value.1 }} )</span>
+    							</div>
+                                <div class="progress mb-3">
+                                    <progress value="{{ value.1 }}" max="{{ all_votes }}" style="width: 100%;"></progress>
+                                </div>
+    							{% endfor %}
+    						</div>
+                        {% elif content_type == 'Post' %}
+                            {% if not content.title %}
+                            <p class="bold noto-sans text-center text-black fs-4 pt-2">{{ content.text|escape|linebreaksbr }}</p>
+                            {% else %}
+                            <p class="bold noto-sans pt-2">{{ content.text|escape|linebreaksbr }}</p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex flex-nowrap flex-row border-top">
+                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span><i class="fa fa-thumbs-up fa-lg" onclick="triggerLike({{ content.id }}, 'like')"></i>&nbsp;{{ content.likes.all|length }}</span></button>
+                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span><i class="fa fa-thumbs-down fa-lg" onclick="triggerDisLike({{ content.id }}, 'dislike')"></i>&nbsp;{{ content.dislikes.all|length }}</span></button>
+                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span class=""><i class="fa fa-eye fa-lg text-black"></i>&nbsp;{{ content.views.all|length }}</span></button>
+                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><i class="fa fa-share fa-lg text-black"></i></span></button>
+                        {% if is_mine %}
+                            <a href="{% url 'blog:update_content' content_id=content.id %}" class="btn"><i class="fa fa-pencil-alt fa-lg text-success"></i></a>
+                            <a href="{% url 'blog:delete_content' content_id=content.id %}" class="btn"><i class="fa fa-trash fa-lg text-danger"></i></a>
+                        {% endif %} 
+                    </div>
+    
+                    {% if content.tags %}
+                        <div class="col-12 border-top p-2">
+                        {% for tag in content.tags %}
+                            <span class="badge rounded-pill bg-secondary">{{ tag }}</span>
+                        {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex flex-row border-top">
+                        <div class="flex-grow-1">
+                            <a href="{% url 'account:details' subject_username=content.author.username %}" class="text-light font-weight-bold mb-0">
+                            {% if content.author.profile_image %}
+                            <img class="pp-image border border-dark rounded rounded-circle" src="{{ content.author.profile_image.url }}" alt="profile image" /><small>{% if content.author == request.user %}You{% else %}by {{ content.author }}{% endif %}</small></a>
+                            {% endif %}
+                            <small class="text-muted text-light tillium">{{ content.timestamp.date }}</small>
+                        </div>
+                        <div class="d-flex flex-shrink-1">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle btn" id="dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false"><i class="fa fa-eye-slash "></i></a>
+                                <ul class="dropdown-menu" aria-labelledby="dropdown-toggle">
+                                    <li class="dropdown-item my-0 py-0"><span class="text-secondary py-0">Please select one of the following reasons</span></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li class="dropdown-item" onclick="report('Contains sensetive/inappropriate content', 'Content',{{content.id}})">Contains sensetive/inappropriate content</li>
+                                    <li class="dropdown-item" onclick="report('Racist', 'Content',{{content.id}})">Racist</li>
+                                    <li class="dropdown-item" onclick="report('False facts', 'Content',{{content.id}})">False facts</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>    
+                </div>
+            </div>
+
+            <div class="col-lg-5 col-md-12 col-sm-12 mx-0 px-0 ">
+                <div class="position-sticky" style="top: 4rem">
+                    {% include 'blog/comment/comments.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% include 'blog/snippets/interaction_jquery.html' %}
+{% include 'blog/poll/select_jquery.html' %}
+{% include 'feedback/report_jquery.html' %}
+
+{% endblock content %}

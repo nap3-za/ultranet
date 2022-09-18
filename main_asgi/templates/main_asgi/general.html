@@ -1,0 +1,187 @@
+<!-- 
+	Connects auth user to their user channel 
+-->
+{% load static %}
+
+
+<script src="{% static 'assets/plugins/reconnecting-websocket/reconnecting-websocket.min.js' %}"></script>
+
+<script type="text/javascript">
+	console.log("Here")
+	var mainSock = null;
+	var channelName = null;
+
+	onStart()
+
+	function onStart(){
+		setupMainSock()
+	}
+
+	function setupMainSock(){
+
+		// Correctly decide between ws:// and wss://
+		var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+		{% if debug_mode %}
+			var ws_path = ws_scheme + '://' + window.location.host + "/" + "{{ request.user.username }}" + "/"; // development
+		{% else %}
+			var ws_path = ws_scheme + '://' + window.location.host + ":8001/" + "{{ request.user.username }}" + "/"; // production
+		{% endif %}
+		
+		
+		
+		mainSock = new ReconnectingWebSocket(ws_path);
+
+		// Handle incoming messages
+		mainSock.onmessage = function(message) {
+			// Decode the JSON
+			// console.log("Got chat websocket message " + message.data);
+			
+			var data = JSON.parse(message.data);
+
+			if (data.noti_count) {
+				set_noti_count(data)
+			};
+			if (data.incoming_notification) {
+				appendNoti(data, from_socket=true)
+			}
+			if (data.noti == "true") {
+				if (data["receiver"] == "{{ request.user.username }}"){
+					getNotification()
+				}
+			}
+
+			if (data.reload) {
+				location.reload()
+			}
+
+			if (data.noti_payload == "true") {
+				handleNotificationsPayload(data.notifications)
+			};	
+			if (data.fr_count) {
+				var fr_count = document.getElementById("fr_count")
+				fr_count.innerHTML = data["fr_count"]
+			}	
+
+		};	
+
+		mainSock.addEventListener("open", function(e){
+			mainSock.send(JSON.stringify({
+				"command": "join",
+				"room_id": "{{ channel_id }}",
+				"room_type": "user_channel",
+			}));	
+		})
+
+		mainSock.onclose = function(e) {
+			console.log('socket closed.');
+		};
+
+		mainSock.onOpen = function(e){
+			console.log("socket open", e)
+		};
+
+		mainSock.onerror = function(e){
+			console.log(e)
+	        console.error('socket error', e)
+	    };
+
+	    if (mainSock.readyState == WebSocket.OPEN) {
+	    	console.log("UiSocket OPEN")
+	    } else if (mainSock.readyState == WebSocket.CONNECTING){
+	        console.log("UiSocket connecting..")
+	    }
+		
+	}
+
+	function sendFrNotification(receiver) {
+		mainSock.send(JSON.stringify({
+			"command": "send_fr_notification",
+			"receiver": receiver,
+		}))
+	}
+
+	function sendAcceptNotification(receiver) {
+		mainSock.send(JSON.stringify({
+			"command": "send_accept_notification",
+			"receiver": receiver,
+		}))
+	}
+
+
+	function handleNotificationsPayload(notifications) {
+		notifications.forEach(function(notification){
+			appendNoti(notification, from_socket=false)
+	})}
+
+	function getNotification() {
+		mainSock.send(JSON.stringify({
+			"command": "get_notification",
+		}));		
+	}
+
+	function appendNoti(data, from_socket) {
+		var noti_parent = document.getElementById("noti_container")
+		var noti_container = document.createElement("div")
+		noti_container.classList.add("item")
+		noti_container.classList.add("p-3")
+
+		var noti_content = document.createElement("div")
+		noti_content.classList.add("row")
+		noti_content.classList.add("gx-2")
+		noti_content.classList.add("justify-content-between")
+		noti_content.classList.add("align-items-center")
+
+		var pp_container = document.createElement("div")
+		pp_container.classList.add("col-auto")
+
+		var profileImage = document.createElement("img")
+		profileImage.classList.add("profile-image")
+		profileImage.classList.add("rounded-circle")
+		profileImage.classList.add("img-fluid")
+		profileImage.src = "{% static '567543567' %}".replace("567543567", data["profile_image"])
+
+		pp_container.appendChild(profileImage)
+		noti_content.appendChild(pp_container)
+
+		var noti_verb = document.createElement("div")
+		noti_verb.classList.add("col")
+		
+		var info_div = document.createElement("div")
+		info_div.classList.add("info")
+
+		var desc = document.createElement("div")
+		desc.classList.add("desc")
+		desc.innerHTML = data["notification_content"]
+
+		var meta = document.createElement("div")
+		meta.classList.add("meta")
+		meta.innerHTML = data["natural_timestamp"]
+
+		info_div.appendChild(desc)
+		info_div.appendChild(meta)
+		noti_verb.appendChild(info_div)
+
+		noti_content.appendChild(noti_verb)
+		noti_container.appendChild(noti_content)
+		noti_parent.appendChild(noti_container)
+
+		if (from_socket) {
+			var noti_icon = document.getElementById("noti_icon")
+			noti_icon.classList.add("text-primary")
+			noti_icon.innerHTML = "notifications_active"
+			
+			setTimeout(function (){
+				noti_icon.classList.remove("text-primary")
+				noti_icon.innerHTML = "notifications"
+			},1000)
+		}
+	}
+
+	function set_noti_count(data) {
+		var noti = document.getElementById("noti_count");
+		noti.innerHTML = data["noti_count"]
+
+	}
+
+
+</script>

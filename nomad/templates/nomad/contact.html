@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Get in touch
+{% endblock title %}
+
+{% block content %}
+
+
+
+<div class="container-fluid">
+
+    <header class="bg-light py-3 my-3">
+      <div class="container px-5">
+          <div class="row gx-5 align-items-center justify-content-center">
+              <div class="col-lg-12 col-xl-12 col-xxl-12 rounded ">
+                  <div class=" mt-1 text-center text-xl-start">
+                      <h1 class="display-4 page-title fw-bolder tillium text-decoration-underline bold pt-2">Get in touch with us</h1>
+                      <p class="lead fw-normal text-dark-50 mb-4">Quickly design and customize responsive mobile-first sites with Bootstrap, the world’s most popular front-end open source toolkit!</p>
+                      <div class="d-grid gap-3 d-sm-flex justify-content-sm-center justify-content-xl-start">
+                          
+                          
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </header>
+
+  <!-- Team members section -->
+    <section class="pb-5 bg-light">
+        <div class="container px-5 mb-5">
+            <div class="row justify-content-center">
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 pb-5">
+                    <div class="text-center">
+                        <a class="text-primary px-2 me-sm-3" href="{{ whatsapp_link }}"><i class="fab fa-whatsapp fa-2x"></i></a><a class="text-info px-2 me-sm-3" href="{{ telegram_link }}"><i class="fab fa-telegram fa-2x"></i></a>
+                        <h5 class="fw-bolder py-2">Chat with us</h5>
+                        <div class="fw-bold noto-sans">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut consectetur</div>
+                    </div>
+                </div>
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 pb-5">
+                    <div class="text-center">
+                        <a class="text-dark px-4 me-sm-3" href="{{ email }}"><i class="fa fa-envelope fa-2x"></i></span></a>
+                        <h5 class="fw-bolder py-2">Email us</h5>
+                        <div class="fw-bold noto-sans">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut consectetur</div>
+                    </div>
+                </div>
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 pb-5">
+                    <div class="text-center">
+                        <p class="tillium fw-bold h4 border bg-dark rounded p-1 text-light">{{ phone_number }}</p>
+                        <h5 class="fw-bolder py-2">Call us</h5>
+                        <div class="fw-bold noto-sans">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut consectetur</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+ 
+</div>
+
+{% endblock content %}
+
+
+
+
+
+
+
+

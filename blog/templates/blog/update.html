@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Create {{ content_type }}
+{% endblock title %}
+
+{% block content %}
+<style type="text/css">
+
+	.field-heading{
+		color: #737373;
+	}
+	#id_confirm{
+		color: green;
+	}
+	#id_confirm:hover {
+		opacity: 0.3;
+	}
+	#id_cancel:hover {
+		opacity: 0.3;
+	}
+	#id_cancel{
+		color: red;
+	}
+	.material-icons{
+		font-size: 30px;
+	}
+	.material-icons:hover{
+		cursor: pointer;
+	}
+
+	.bd-placeholder-img {
+		font-size: 1.125rem;
+		text-anchor: middle;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+	}
+	.textarea {
+		height: 300px;
+		max-height: 300px;
+	}
+
+	@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+	font-size: 3.5rem;
+		}
+	}
+
+		.bd-placeholder-img {
+		font-size: 1.125rem;
+		text-anchor: middle;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+	}
+	@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+	font-size: 3.5rem;
+		}
+	}
+	.image-container{
+		max-width: 75px;
+		height: auto;
+	}
+
+</style>
+
+<div class="container px-1 py-1">
+	<section class="bg-light pt-3" id="account">
+		<div class="container-xl">
+	        <div class="row align-items-center justify-content-center">
+	            <div class="col-lg-8 col-xl-8 col-xxl-8">
+
+					<form class="form" method="POST">{% csrf_token %}
+						<div class="row justify-content-center">
+							<div class="col-12 py-1">
+								<div class="d-flex flex-row justify-content-between align-items-center my-1">
+									<div class="flex-grow-1">
+										<div class="item-data">
+											<div class="form-floating">
+												<input class="form-control" type="text" name="title" maxlength="250" {% if content.title %}value="{{ content.title }}"{% endif %}>
+												<label for="floatingInput">Title (optional)</label>
+											</div>
+										</div>
+									</div><!--//col-->
+								</div><!--//row-->
+
+								<div class="item-data mt-3">
+									{% if content_type == 'Poll' %}
+									<small class="tillium">Each new line of text is a poll choice</small>
+									{% endif %}
+									<textarea name="text" aria-label="With textarea" class="form-control textarea mb-3" maxlength="250" id="id_" >{{ content.text }}</textarea>
+								</div>
+
+								<div class="input-group mb-1 p-0">
+								<span class="input-group-text">Visibility</span>
+								<select name="visibility" id="id_" class="form-select form-control ">
+									<option selected="" value="{{ content.visibility }}">current : {{ content.visibility }}</option>
+									<option value="Anyone">Anyone</option>
+									<option value="Friends">Friends</option>
+								</select>
+								</div>
+
+								<div class="form-check form-switch my-1">
+									<input class="form-check-input" type="checkbox" id="settings-switch-5" {% if content.draft %}checked=""{% endif %} name="draft" >
+									<label class="form-check-label" for="settings-switch-5">Draft</label>
+								</div>
+
+								<!-- Tags required -->
+								<div class="input-group my-1">
+									<span class="input-group-text">Tags</span>
+									<select multiple="" name="tags" class="form-select form-control">
+										<option {% if 'Operating Systems' in content.tags %}selected=""{% endif %} value="Operating Systems">Operating Systems</option>
+										<option {% if 'Competetive Programming' in content.tags %}selected=""{% endif %}value="Competetive Programming">Competetive Programming</option>
+										<option {% if 'Software' in content.tags %}selected=""{% endif %}value="Software">Software</option>
+										<option {% if 'Programming Languages' in content.tags %}selected=""{% endif %}value="Programming Languages">Programming Languages</option>
+										<option {% if 'Hardware' in content.tags %}selected=""{% endif %}value="Hardware">Hardware</option>
+									</select>
+								</div>
+
+								<input type="text" name="content_type" hidden="" value="{{ content_type }}">
+
+								<div class="col-12 py-0">
+
+									{% for field in form %}
+									<p>
+									{% for error in field.errors %}
+									<p style="color: red">{{ error }}</p>
+									{% endfor %}
+									</p>
+									{% endfor %}
+									{% if form.non_field_errors %}
+									<div style="color: red">
+									<p>{{form.non_field_errors}}</p>
+									</div>
+									{% endif %}
+									<p class="text-center"><button class="btn app-btn-primary btn-sm mx-1" type="submit">Save changes</button></p>
+								</div>
+							</div>
+						</div>
+					</form>
+
+	            </div>
+	        </div>
+	    </div>
+	</section>
+</div>
+
+
+
+{% endblock %}

@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Feed
+{% endblock %}
+
+{% block content %}
+
+<style type="text/css">
+  .bg-classic {
+      background-color: #061b44;
+  }
+  .bd-placeholder-img {
+    font-size: 1.125rem;
+    text-anchor: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+
+  @media (min-width: 768px) {
+  .bd-placeholder-img-lg {
+  font-size: 3.5rem;
+    }
+  }
+  .image-container{
+    max-width: 70px;
+    height: auto;
+  }
+    .pp-image {
+        width: 35px;
+        height: 35px;
+        margin: 7px 10px 7px 7px;
+    }
+    .ml-3 {
+        margin-left: 12px;
+    }
+    .font-size-m {
+        font-size: 25px;
+    }
+
+  .b-example-divider {
+    height: 3rem;
+    background-color: rgba(0, 0, 0, .1);
+    border: solid rgba(0, 0, 0, .15);
+    border-width: 1px 0;
+    box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+  }
+
+  .bi {
+    vertical-align: -.125em;
+    fill: currentColor;
+  }
+
+  .feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    font-size: 2rem;
+    color: #fff;
+    border-radius: .75rem;
+  }
+
+  .icon-link {
+    display: inline-flex;
+    align-items: center;
+  }
+  .icon-link > .bi {
+    margin-top: .125rem;
+    margin-left: .125rem;
+    transition: transform .25s ease-in-out;
+    fill: currentColor;
+  }
+  .icon-link:hover > .bi {
+    transform: translate(.25rem);
+  }
+
+  .textarea {
+	height: 180px;
+	max-height: 60px;
+}
+  .icon-square {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.5rem;
+    border-radius: .75rem;
+  }
+
+  .rounded-4 { border-radius: .5rem; }
+  .rounded-5 { border-radius: 1rem; }
+
+  .text-shadow-1 { text-shadow: 0 .125rem .25rem rgba(0, 0, 0, .25); }
+  .text-shadow-2 { text-shadow: 0 .25rem .5rem rgba(0, 0, 0, .25); }
+  .text-shadow-3 { text-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .25); }
+
+  .card-cover {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+  }
+
+  .b-example-divider {
+    height: 3rem;
+    background-color: rgba(0, 0, 0, .1);
+    border: solid rgba(0, 0, 0, .15);
+    border-width: 1px 0;
+    box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+  }
+
+</style>
+
+<div class="container-fluid">
+  <div class="py-1">
+    <div class="container-fluid mb-0 m-sm-0">
+      
+
+      <div class="row align-items-center justify-content-between">
+
+        <div class="col-12 my-1">
+			<form method="post">{% csrf_token%}
+				<div class="item-data">
+					<textarea name="text" aria-label="With textarea" placeholder="Whats on your mind?" class="form-control textarea mb-3" maxlength="250" ></textarea>
+				</div>
+			</form>
+        </div><!--//col-auto-->
+      </div><!--//row-->
+    </div>
+  </div>
+</div>
+
+
+
+{% if contents %}
+<div class="row justify-content-center">
+	<div class="col-lg-8 col-xl-8 col-xxl-8 list rounded border p-lg-1">
+	  {% for content in contents %}
+	      {% if content.0.content_type == "Poll" %}
+	        <div class="border-bottom border-dark">
+	          <div class="container" id="hanging-icons">
+	            <div class="row row-cols-1 row-cols-lg-1">
+	              <div class="col d-flex align-items-start">
+
+	                <div class="flex-grow-1">
+	                  <div class="row">
+	                    <div class="col-lg-12 col-md-12 col-sm-12 text-start">
+	                      <a class="text-decoration-none" href="{% url 'blog:content' content_id=content.0.id %}"><h2 class="tauri">{{ content.0.title }}</h2></a>
+	                    </div>
+	                    {% for value in content.0.choice_set.all %}
+  	                    <div class="list-group-item list-group-item-action list-group-item-light"  onclick="triggerSelect({{value.id}});">
+  	                        <span class="text-black">{{ value.value }}</span>&nbsp;&nbsp;&nbsp;
+  	                        <span>( {{ value.votes.all|length }} )</span>
+  	                    </div>
+	                    {% endfor %}
+	                  </div>
+	                  <div class="">
+	                    {% include 'blog/snippets/interaction.html' %}
+	                  </div>
+	                  <div class="d-flex flex-row">
+	                    <div class="flex-grow-1">
+	                      <a href="{% url 'account:details' subject_username=content.0.author.username %}" class="text-light font-weight-bold mb-0">
+	                      {% if content.0.author.profile_image %}
+	                      <img class="pp-image border border-dark rounded rounded-circle" src="{{ content.0.author.profile_image.url }}" alt="profile image" /><small>{% if content.1 %}You{% else %}{{ content.author }}{% endif %}</small></a>
+	                      {% endif %}
+	                      <small class="text-muted text-light tillium">{{ content.0.timestamp.date }}</small>
+	                    </div>
+	                    <div class="d-flex flex-shrink-1">
+	                      <div class="icon-square bg-light text-dark ">
+	                        <button class="btn border" type="button"><span class="material-icons">settings</span></button>
+	                      </div>
+	                    </div>
+	                  </div>
+
+	                </div>
+	              </div>
+	            </div>
+	          </div>
+
+	        </div>
+	      {% elif content.0.content_type == "Post" %}
+	        <div class="container  border-bottom  border-dark" id="hanging-icons">
+	          <div class="row row-cols-1 row-cols-lg-1">
+	            <div class="col d-flex align-items-start">
+
+	              <div class="flex-grow-1 ">
+
+
+	                <div class="row">
+	                  <div class="col-lg-12 col-md-12 col-sm-12 text-start">
+	                    {% if content.0.title %}<h2 class="tauri">{{ content.0.title }}</h2>{% endif %}
+	                  </div>
+	                  <p class="noto-sans">{{ content.0.text|truncatechars:250 }}</p>
+	                </div>
+
+	                <a href="{% url 'blog:content' content_id=content.0.id %}" class="text-blue"><p class="">Continue reading</p></a>
+	                <div class="">
+	                  {% include 'blog/snippets/interaction.html' %}
+	                </div>
+	                <div class="d-flex flex-row">
+	                  <div class="flex-grow-1">
+	                    <a href="{% url 'account:details' subject_username=content.0.author.username %}" class="text-light font-weight-bold mb-0">
+	                    {% if content.0.author.profile_image %}
+	                    <img class="pp-image border border-dark rounded rounded-circle" src="{{ content.0.author.profile_image.url }}" alt="profile image" /><small>{% if content.1 %}You{% else %}{{ content.author }}{% endif %}</small></a>
+	                    {% endif %}
+	                    <small class="text-muted text-light tillium">{{ content.0.timestamp.date }}</small>
+	                  </div>
+	                  <div class="d-flex flex-shrink-1">
+	                    <div class="icon-square bg-light text-dark ">
+	                      <button class="btn border" type="button"><span class="material-icons">settings</span></button>
+	                    </div>
+	                  </div>
+	                </div>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	      {% endif %}
+	  {% endfor %}
+	  <p class="text-center">
+	    {% if contents.has_previous %}
+	      <button class="btn btn-primary"><a class="text-light" href="?page={{ contents.previous_page_number }}">&laquo; Previous</a></button>
+	    {% endif %}
+	    <small class="tillium bold m-2 text-light">Page {{ contents.number }} of {{ contents.paginator.num_pages }}</small>
+	    {% if contents.has_next %}
+	      <button class="btn btn-primary m-2"><a class="text-light" href="?page={{ contents.next_page_number }}">Next &raquo;</a></button><br>
+	    {% endif %}
+	  </p>
+	</div>
+</div>
+{% endif %}
+
+{% include 'blog/poll/select_jquery.html' %}
+{% include 'blog/snippets/interaction_jquery.html' %}
+<script type="text/javascript">
+
+  function feedbackNoti(content) {
+
+    // create a notification
+
+  }
+
+
+</script>
+
+
+{% endblock content %}

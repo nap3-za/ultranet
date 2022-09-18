@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Login
+{% endblock title %}
+
+{% block content %}
+<style type="text/css">
+	.bd-placeholder-img {
+		font-size: 1.125rem;
+		text-anchor: middle;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+	}
+	@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+	font-size: 3.5rem;
+		}
+	}
+	.image-container, .logo-icon{
+		max-width: 75px;
+		height: auto;
+	}
+</style>
+
+<div class="row mt-3 mb-3 justify-content-center">
+    <div class="row g-0 justify-content-center">
+	    <div class="col-12 col-lg-6 text-center py-3">
+		    <div class="d-flex flex-column align-content-end">
+			    <div class="">	
+					<h2 class="auth-heading text-center mt-3">Log in to Ultranet</h2>
+				    <div class="app-auth-branding mb-4"><a class="app-logo" href="index.html"><img class="logo-icon me-2" src="{% static 'logos/light.svg' %}" alt="logo"></a></div>
+					
+			        <div class="auth-form-container text-start">
+						<form class="auth-form login-form" action="{% url 'login' %}" method="post"> {% csrf_token %}        
+								<div class="form-floating my-1">
+									<input  class="form-control" type="email" name="email" maxlength="50" required="" id="id_name">
+									<label for="floatingInput">Email</label>
+								</div>
+								<div class="form-floating my-1">
+									<input  class="form-control" type="password" name="password" maxlength="50" required="" id="id_name">
+									<label for="floatingInput">Password</label>
+								</div>
+								
+								<div class="extra mt-3 row justify-content-between">
+									<div class="col-6">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" value="" id="RememberPassword" name="persistent">
+											<label class="form-check-label small tillium" for="RememberPassword">
+											Remember me
+											</label>
+										</div>
+									</div><!--//col-6-->
+									<div class="col-6">
+										<div class="forgot-password text-end">
+											<a href="{% url 'password_reset' %}" class="small tillium">Forgot password?</a>
+										</div>
+									</div><!--//col-6-->
+								</div><!--//extra-->
+							</div><!--//form-group-->
+
+							{% for field in form %}
+							<p>
+							{% for error in field.errors %}
+							<p style="color: red">{{ error }}</p>
+							{% endfor %}
+							</p>
+							{% endfor %}
+							{% if form.non_field_errors %}
+							<div style="color: red">
+							<p>{{form.non_field_errors}}</p>
+							</div>
+							{% endif %}
+
+							<div class="text-center">
+								<button type="submit" class="btn btn-primary w-50 mx-auto">Log In</button>
+							</div>
+						</form>
+						
+						<div class="auth-option text-center py-3 tillium">No Account? Sign up <a class="text-link tillium" href="{% url 'register' %}" >here</a>.</div>
+					</div><!--//auth-form-container-->	
+
+			    </div><!--//auth-body-->
+		    
+		    </div><!--//flex-column-->   
+	    </div><!--//auth-main-col-->
+
+    </div><!--//row-->
+</div>
+{% endblock %}

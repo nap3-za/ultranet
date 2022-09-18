@@ -1,0 +1,451 @@
+{% load static %}
+
+<script type="text/javascript">
+	var mainSock = null;
+
+	onStart()
+
+	function onStart(){
+		console.log("On start")
+		{% if room %}
+			console.log("Room is available")
+			if("{{room.user2}}" == "{{request.user}}"){
+				setupMainSock("{{ room.id }}")
+			}
+			else{
+				setupMainSock("{{ room.id }}")
+			}
+		{% else %}
+			console.log("No room")
+			{% if m_and_f %}
+				createOrReturnPrivateChat("{{m_and_f.0.friend.id}}")
+			{% endif %}
+		{% endif %}
+		{% for x in m_and_f %}
+			preloadImage("{{x.friend.profile_image.url|safe}}", "id_friend_img_{{x.friend.id}}")
+		{% endfor %}
+	}
+
+
+
+
+	function setupMainSock(){
+		// Correctly decide between ws:// and wss://
+		var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+		{% if debug_mode %}
+			var ws_path = ws_scheme + '://' + window.location.host + "/public_chat/" + "{{ room.id }}" + "/"; // development
+		{% else %}
+			var ws_path = ws_scheme + '://' + window.location.host + ":8001/public_chat/" + "{{ room.id }}""{{ room.id }}" + "/"; // production
+		{% endif %}
+		
+		mainSock = new ReconnectingWebSocket(ws_path);
+		
+		// Handle incoming messages
+		mainSock.onmessage = function(message) {
+			// Decode the JSON
+			// console.log("Got chat websocket message " + message.data);
+			
+			var data = JSON.parse(message.data);
+
+			// display the progress bar?
+			displayChatroomLoadingSpinner(data.display_progress_bar)
+
+			// Handle errors (ClientError)
+			if (data.error) {
+				console.error(data.error + ": " + data.message)
+				showClientErrorModal(data.message)
+				return;
+			}
+			// Handle joining (Client perspective)
+			if (data.setup_room) {
+				console.log("Setting up the room");
+				getRoomChatMessages()
+				setConnectedUsersCount(data.user_count)
+			}
+
+			if (data.noti_count) {
+				set_noti_count(data)
+			};
+			if (data.incoming_notification) {
+				appendNoti(data)
+			}
+			if (data.noti == "true") {
+				if (data["receiver"] == "{{ request.user.username }}"){
+					getNotification()
+				}
+			}
+
+			// Handle getting a message
+			if (data.msg_type == 0) {
+				appendChatMessage(data, true, true)
+			}
+
+			if (data.user_count) {
+				setConnectedUsersCount(data["user_count"])
+			}
+
+			// new payload of messages coming in from backend
+			if(data.messages_payload){
+				handleMessagesPayload(data.messages, data.new_page_number)
+			}
+		};
+
+		mainSock.addEventListener("open", function(e){
+			
+			// join chat room
+			if("{{request.user.is_authenticated}}"){
+				mainSock.send(JSON.stringify({
+					"command": "join",
+					"room_id": "{{ room.id }}",
+					"room_type": "public_channel",
+				}));
+			}
+		})
+
+		mainSock.addEventListener("close", function(e){
+			
+			// join chat room
+			if("{{request.user.is_authenticated}}"){
+				mainSock.send(JSON.stringify({
+					"command": "leave",
+					"room_id": "{{ room.id }}",
+					"room_type": "public_channel",
+				}));
+			}
+		})
+
+		mainSock.onclose = function(e) {
+			console.log('Chat socket closed.');
+		};
+
+		mainSock.onOpen = function(e){
+			console.log("ChatSocket onOpen", e)
+		};
+
+		mainSock.onerror = function(e){
+	        //console.log('ChatSocket error', e)
+	    };
+		
+	}
+
+	function closeWebSocket(){
+		if(mainSock != null){
+			mainSock.close()
+			mainSock = null
+		}
+	}
+	
+
+	function getNotification() {
+		mainSock.send(JSON.stringify({
+			"command": "get_notification",
+		}));		
+	}
+	
+	function set_noti_count(data) {
+		var noti = document.getElementById("noti_count");
+		noti.innerHTML = data["noti_count"]
+
+	}
+
+	document.getElementById('id_chat_message_input').focus();
+	document.getElementById('id_chat_message_input').onkeyup = function(e) {
+		if (e.keyCode === 13 && e.shiftKey) {  // enter + return
+			// Handled automatically by textarea
+		}
+		else if(e.keyCode === 13 && !e.shiftKey){ // enter + !return
+			document.getElementById('id_chat_message_submit').click();
+		}
+	};
+    document.getElementById('id_chat_message_submit').onclick = function(e) {
+		const messageInputDom = document.getElementById('id_chat_message_input');
+		const message = messageInputDom.value;
+		mainSock.send(JSON.stringify({
+			"command": "chat",
+			"message": message,
+			"type": "send_public_msg",
+			"room_id": "{{ room.id }}"
+		}));
+		messageInputDom.value = '';
+	};
+
+	function showClientErrorModal(message){
+		document.getElementById("id_client_error_modal_body").innerHTML = message
+		document.getElementById("id_trigger_client_error_modal").click()
+	}
+
+	function appendChatMessage(data, maintainPosition, isNewMessage){
+		message = data['message']
+		msg_id = data['msg_id']
+		uName = data['username']
+		user_id = data['user_id']
+		profile_image = data['profile_image']
+		timestamp = data['natural_timestamp']
+		
+		var msg = message + '\n';
+		var username = uName + ": "
+		createChatMessageElement(msg, msg_id, username, profile_image, user_id, timestamp, maintainPosition, isNewMessage)
+	}
+
+
+	/*
+		Build a new ChatMessage element and append to the list
+	*/
+
+	function appendNoti(data) {
+
+		var noti_parent = document.getElementById("noti_container")
+		var noti_container = document.createElement("div")
+		noti_container.classList.add("item")
+		noti_container.classList.add("p-3")
+
+		var noti_content = document.createElement("div")
+		noti_content.classList.add("row")
+		noti_content.classList.add("gx-2")
+		noti_content.classList.add("justify-content-between")
+		noti_content.classList.add("align-items-center")
+
+		var pp_container = document.createElement("div")
+		pp_container.classList.add("col-auto")
+
+		var profileImage = document.createElement("img")
+		profileImage.classList.add("profile-image")
+		profileImage.classList.add("rounded-circle")
+		profileImage.classList.add("img-fluid")
+		profileImage.src = "{% static '567543567' %}".replace("567543567", data["profile_image"])
+
+		pp_container.appendChild(profileImage)
+		noti_content.appendChild(pp_container)
+
+		var noti_verb = document.createElement("div")
+		noti_verb.classList.add("col")
+		
+		var info_div = document.createElement("div")
+		info_div.classList.add("info")
+
+		var desc = document.createElement("div")
+		desc.classList.add("desc")
+		desc.innerHTML = data["notification_content"]
+
+		var meta = document.createElement("div")
+		meta.classList.add("meta")
+		meta.innerHTML = data["natural_timestamp"]
+
+		info_div.appendChild(desc)
+		info_div.appendChild(meta)
+		noti_verb.appendChild(info_div)
+
+		noti_content.appendChild(noti_verb)
+		noti_container.appendChild(noti_content)
+		noti_parent.appendChild(noti_container)
+
+		var noti_panel = document.getElementById("noti_panel")
+		var alert_div = document.createElement("div")
+		alert_div.classList.add("alert")
+		alert_div.classList.add("alert-primary")
+		alert_div.classList.add("alert-dismissible")
+		alert_div.classList.add("fade")
+		alert_div.classList.add("show")
+		alert_div.setAttribute("role", "alert")
+		alert_div.innerHTML = data["notification_content"]
+
+		var close_btn = document.createElement("button")
+		close_btn.classList.add("btn-close")
+		close_btn.type = "button"
+		close_btn.setAttribute("data-bs-dismiss", "alert")
+		close_btn.setAttribute("aria-label","Close")
+
+		alert_div.appendChild(close_btn)
+		noti_panel.prepend(alert_div)	
+	}
+
+	function createChatMessageElement(msg, msg_id, username, profile_image, user_id, timestamp, maintainPosition, isNewMessage){
+		var chatLog = document.getElementById("id_chat_log")
+
+		var newMessageDiv = document.createElement("div")
+		newMessageDiv.classList.add("d-flex")
+		newMessageDiv.classList.add("flex-row")
+		newMessageDiv.classList.add("message-container")
+
+		var profileImage = document.createElement("img")
+		profileImage.addEventListener("click", function(e){
+			selectUser(user_id)
+		})
+		profileImage.classList.add("profile-image")
+		profileImage.classList.add("rounded-circle")
+		profileImage.classList.add("img-fluid")
+		profileImage.src = "{% static 'codingwithmitch/dummy_image.png' %}"
+		var profile_image_id = "id_profile_image_" + msg_id
+		profileImage.id = profile_image_id
+		newMessageDiv.appendChild(profileImage)
+
+		var div1 = document.createElement("div")
+		div1.classList.add("d-flex")
+		div1.classList.add("flex-column")
+
+		var div2 = document.createElement("div")
+		div2.classList.add("d-flex")
+		div2.classList.add("flex-row")
+
+		var usernameSpan = document.createElement("span")
+		usernameSpan.addEventListener("click", function(e){
+			selectUser(user_id)
+		})
+		usernameSpan.classList.add("username-span")
+		if (username == "{{ request.user.username }}: "){
+			usernameSpan.innerHTML = "me"
+			usernameSpan.classList.add("text-success")
+		}
+		else {
+			usernameSpan.innerHTML = username
+		}
+		div2.appendChild(usernameSpan)
+
+		var timestampSpan = document.createElement("span")
+		timestampSpan.innerHTML = timestamp
+		timestampSpan.classList.add("timestamp-span")
+		timestampSpan.classList.add("d-flex")
+		timestampSpan.classList.add("align-items-center")
+		timestampSpan.addEventListener("click", function(e){
+			selectUser(user_id)
+		})
+		div2.appendChild(timestampSpan)
+
+		div1.appendChild(div2)
+
+		var msgP = document.createElement("p")
+		msgP.innerHTML = msg
+		msgP.classList.add("msg-p")
+		div1.appendChild(msgP)
+
+		newMessageDiv.appendChild(div1)
+
+		if(isNewMessage){
+			chatLog.insertBefore(newMessageDiv, chatLog.firstChild)
+		}
+		else{
+			chatLog.appendChild(newMessageDiv)
+		}
+		
+		if(!maintainPosition){
+			chatLog.scrollTop = chatLog.scrollHeight
+		}
+
+		// now that a default image is showing, load the actual image.
+		preloadImage(profile_image, profile_image_id) // called from base_js.html
+	}
+
+ 	function setPageNumber(pageNumber){
+		document.getElementById("id_page_number").innerHTML = pageNumber
+	}
+
+
+	function setPaginationExhausted(){
+		setPageNumber("-1")
+	}
+
+ 	/*
+		Retrieve the chat room messages given the page number.
+	*/
+	// OK
+
+
+	function getRoomChatMessages(){
+		var pageNumber = document.getElementById("id_page_number").innerHTML
+		if(pageNumber != "-1"){
+			setPageNumber("-1") // Do not allow any other queries while one is in progress
+			mainSock.send(JSON.stringify({
+				"command": "chat",
+				"type": "get_public_chat_messages",
+				"room_id": "{{ room.id }}",
+				"page_number": pageNumber,
+			}));
+		}
+	}
+
+
+	function setConnectedUsersCount(count){
+		element = document.getElementById("id_connected_users")
+		element.innerHTML = count
+	}
+
+
+	function handleMessagesPayload(messages, new_page_number){
+		if(messages != null && messages != "undefined" && messages != "None"){
+			setPageNumber(new_page_number)
+			messages.forEach(function(message){
+				appendChatMessage(message, true, false)
+			})
+		}
+		else{
+			setPaginationExhausted() // no more messages
+		}
+	}
+
+
+	function selectUser(user_id){
+		// Weird work-around for passing arg to url
+		var url = "{% url 'account:details' subject_username=53252623623632623 %}".replace("53252623623632623", user_info['username'])
+		var win = window.open(url, "_blank")
+		win.focus()
+	}
+
+	/*
+		Get the next page of chat messages when scrolls to bottom
+	*/
+
+	function closeWebSocket(socket){
+		if(socket != null){
+			socket.close()
+			socket = null
+		}
+	}
+
+	/*
+		Enable the function "chatLogScrollListener"
+	*/
+	function enableChatLogScrollListener(){
+		document.getElementById("id_chat_log").addEventListener("scroll", chatLogScrollListener);
+	}
+	
+	/*
+		Disable the function "chatLogScrollListener"
+	*/
+	function disableChatLogScrollListener(){
+		document.getElementById("id_chat_log").removeEventListener("scroll", chatLogScrollListener)
+	}
+
+	function displayChatroomLoadingSpinner(isDisplayed){
+		console.log("displayChatroomLoadingSpinner: " + isDisplayed)
+		var spinner = document.getElementById("id_chatroom_loading_spinner")
+		if(isDisplayed){
+			spinner.style.display = "block"
+		}
+		else{
+			spinner.style.display = "none"
+		}
+	}
+
+	function highlightFriend(userId){
+		// select new friend
+		var container = document.querySelector("#id_friend_container_320329320").replace("320329320",userId);
+		container.style.background = "#f2f2f2";
+		alert("done highlightFriend");
+
+	}
+
+	function clearHighlightedFriend(){
+		{% if m_and_f %}
+			{% for x in m_and_f %}
+				document.getElementById("id_friend_container_{{x.friend.id}}").style.background = ""
+			{% endfor %}
+		{% endif %}
+
+		// clear the profile image and username of current chat
+		document.getElementById("id_other_user_profile_image").classList.add("d-none")
+		document.getElementById("id_other_user_profile_image").src = "{% static 'codingwithmitch/dummy_image.png' %}"
+		document.getElementById("id_other_username").innerHTML = ""
+	}
+</script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Reset my password
+{% endblock title %}
+
+{% block content %}
+<style type="text/css">
+	.bd-placeholder-img {
+		font-size: 1.125rem;
+		text-anchor: middle;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+	}
+	@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+	font-size: 3.5rem;
+		}
+	}
+	.image-container, .logo-icon {
+		max-width: 75px;
+		height: auto;
+	}
+</style>
+
+<div class="row mt-3 mb-3 justify-content-center">
+    <div class="row g-0 justify-content-center">
+        <div class="col-12 col-lg-6 text-center p-5">
+            <div class="d-flex flex-column align-content-end">
+                <div class="">  
+                    <h2 class="auth-heading text-center mt-3">Forgotten your password</h2>
+                    <small>Enter your account email address and an email will be sent with a link to the password reset page. (don't forget to check your spam)</small>
+                    <div class="app-auth-branding mb-4"><a class="app-logo" href="index.html"><img class="logo-icon me-2" src="{% static 'logos/light.svg' %}" alt="logo"></a>
+                    </div>
+                    
+                    <div class="auth-form-container text-start">
+                        <form class="auth-form login-form" method="post"> {% csrf_token %}
+
+							<div class="form-floating my-1">
+								<input placeholder="Email"  class="form-control" type="email" name="email" maxlength="254" required="" id="id_email">
+								<label for="floatingInput">Email address</label>
+							</div>
+
+                            {% for field in form %}
+                            <p>
+                            {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                            {% endfor %}
+                            </p>
+                            {% endfor %}
+                            {% if form.non_field_errors %}
+                            <div style="color: red">
+                            <p>{{form.non_field_errors}}</p>
+                            </div>
+                            {% endif %}
+                            
+                            <p class="text-center">
+                                <button class=" btn app-btn-primary mt-3 btn-md" type="submit">Change password</button>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+

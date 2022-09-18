@@ -1,0 +1,21 @@
+<script type="text/javascript">
+    function acceptFriendRequest(friend_request_id) {
+        var url = "{% url 'friend:accept' friend_request_id=525613164613352031 %}".replace("525613164613352031", friend_request_id)
+        
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: url,
+            timeout: 5000,
+            success: function (data) {
+                location.reload()
+            },
+            error: function (data) {
+                console.log("[-] Something went wrong")
+            },
+            complete: function (data) {
+                uiUpdateFunction()
+            },            
+        })
+    }
+</script>

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Ask a question
+{% endblock title %}
+
+{% block content %}
+
+<style type="text/css">
+
+	.field-heading{
+		color: #737373;
+	}
+	#id_confirm{
+		color: green;
+	}
+	#id_confirm:hover {
+		opacity: 0.3;
+	}
+	#id_cancel:hover {
+		opacity: 0.3;
+	}
+	#id_cancel{
+		color: red;
+	}
+
+	.bd-placeholder-img {
+		font-size: 1.125rem;
+		text-anchor: middle;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+	}
+	.textarea {
+		height: 180px;
+		max-height: 200px;
+	}
+
+	@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+	font-size: 3.5rem;
+		}
+	}
+</style>
+
+<div class="container px-1 py-1">
+	<section class="bg-light pt-3" id="account">
+		<div class="container-xl">			    
+			<h1 class="app-page-title">Ask a question</h1>
+			<small class="tillium">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut consectetur nulla a ante tempor, posuere rhoncus nunc sollicitudin</small>
+	        <div class="row align-items-center justify-content-center">
+	            <div class="col-lg-8 col-xl-8 col-xxl-8 my-2">
+
+					<form class="form-signin" method="post" enctype="multipart/form-data">{% csrf_token %}
+						<div class="row justify-content-center pt-2">
+							<div class="col-12 py-1">
+								<div class="item-label small text-black tillium">
+									Please express yourself below and we'll get back to you (max characters is 750)
+								</div>
+								<div class="item-data">
+									<textarea name="question" aria-label="With textarea" class="form-control textarea mb-3" maxlength="2500" id="id_feedback" ></textarea>
+								</div>
+							</div>
+
+							<div class="col-12 py-0">
+
+								{% for field in form %}
+								<p>
+								{% for error in field.errors %}
+								<p style="color: red">{{ error }}</p>
+								{% endfor %}
+								</p>
+								{% endfor %}
+								{% if form.non_field_errors %}
+								<div style="color: red">
+								<p>{{form.non_field_errors}}</p>
+								</div>
+								{% endif %}
+								<p class="text-center"><button class="btn app-btn-primary btn-sm mx-1" type="submit">Submit</button></p>
+							</div>
+						</div>
+					</form>
+
+	            </div>
+	        </div>
+	    </div>
+	</section>
+</div>
+
+
+{% endblock content %}

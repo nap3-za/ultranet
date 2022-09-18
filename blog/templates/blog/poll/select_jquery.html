@@ -1,0 +1,33 @@
+
+<script type="text/javascript">
+	function select(value_id) {
+
+		var url = "{% url 'blog:select' value_id=666846846854 %}".replace("666846846854", value_id);
+
+		payload = {
+			"csrfmiddlewaretoken": "{{ csrf_token }}",
+		    "value_id": value_id,
+		};
+		$.ajax({
+			type: 'POST',
+			dataType: "json",
+			url: url,
+			timeout: 5000,
+			data: payload,
+			success: function(data) {
+				console.log("SUCCESS", data['response'])
+			},
+			error: function(data) {
+				console.error("ERROR...", data['response'])
+			},
+			complete: function(data){
+				console.log("[+] Success")
+				location.reload()
+			}
+		});
+	}
+
+    function triggerSelect(value_id) {
+      select(value_id);
+    }
+</script>

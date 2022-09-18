@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Post search
+{% endblock %}
+
+{% block content %}
+<style type="text/css">
+	.profile-image{
+		max-height: 60px;
+		max-width: 60px;
+	}
+	.profile-image{
+		border-radius: 12px;
+	}
+	.card{
+		border-radius: 12px;
+	}
+	.dropdown-toggle::after { 
+		content: none; 
+	}
+	.profile-link{
+		color: #000;
+	}
+	.material-icons{
+		font-size: 30px;
+	}
+	.material-icons:hover{
+		cursor: pointer;
+	}
+	.confirm-friend-request{
+		color: green;
+	}
+	.confirm-friend-request:hover {
+		opacity: 0.3;
+	}
+	.decline-friend-request:hover {
+		opacity: 0.3;
+	}
+	.decline-friend-request{
+		color: red;
+	}
+</style>
+
+<div class="container mt-3">
+	<div class="card p-2">
+		{% if friend_requests %}
+			<div class="d-flex flex-row flex-wrap">
+			{% for friend_request in friend_requests %}
+				<div class="card flex-row flex-grow-1 p-2 mx-2 my-2 align-items-center">
+					<a class="profile-link" href="{% url 'account:details' subject_username=friend_request.receiver.username %}">
+						<div class="card-image m-2">
+							<img class="card-image profile-image" src="{{ friend_request.sender.profile_image.url }}" alt="">
+						</div>
+					</a>
+					<a class="profile-link flex-grow-1" href="{% url 'account:details' subject_username=friend_request.sender.username %}">
+						<div class="card-center px-2">
+							<h4 class="card-title">{{friend_request.sender.username}}</h4>
+						</div>
+					</a>
+					<p class="flex-shrink-1">
+						<button style="color: green;" class="mt-4 btn" type="button" id="id_confirm_{{friend_request.sender.id}}" class="confirm-friend-request material-icons p-1" onclick='triggerAcceptFriendRequest("{{friend_request.id}}","{{ friend_request.receiver.username }}")'><i class="fa fa-check-circle fa-2x"></i></button>
+				  		<button style="color: red;" type="button" class="mt-4 btn" id="id_cancel_{{friend_request.sender.id}}"class="decline-friend-request material-icons p-1" onclick='triggerDeclineFriendRequest("{{friend_request.id}}")'><i class="fa fa-times-circle fa-2x"></i></button>
+			  		</p>
+					  
+				{% if forloop.counter|divisibleby:2 %}
+				</div><div class="d-flex flex-row flex-wrap">
+				{% endif %}
+			
+			{% endfor %}	
+		{% else %}
+
+				<!-- If no friends -->
+				<div class="d-flex flex-row flex-grow-1 justify-content-center align-items-center p-4">
+					<p>No results</p>
+				</div>
+		{% endif %}
+	</div>
+</div>
+
+
+<script type="text/javascript">
+
+	function onFriendRequestAccepted(){
+		location.reload();
+	}
+
+	function onFriendRequestDeclined(){
+		location.reload();
+	}
+
+	function triggerAcceptFriendRequest(friend_request_id, username){
+		acceptFriendRequest(friend_request_id, onFriendRequestAccepted, username)
+	}
+
+	function triggerDeclineFriendRequest(friend_request_id){
+		declineFriendRequest(friend_request_id, onFriendRequestDeclined)
+	}
+</script>
+
+{% include 'friend/accept_jquery.html' %}
+{% include 'friend/decline_jquery.html' %}
+
+{% endblock content %}

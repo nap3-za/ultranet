@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Poll details
+{% endblock title %}
+
+{% block content %}
+
+
+
+{% load static %}
+
+<style type="text/css">
+	.bd-placeholder-img {
+		font-size: 1.125rem;
+		text-anchor: middle;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+	}
+
+	@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+	font-size: 3.5rem;
+		}
+	}
+	.image-container{
+		max-width: 70px;
+		height: auto;
+	}
+    .pp-image {
+        width: 35px;
+        height: 35px;
+        margin: 7px 10px 7px 7px;
+    }
+    .ml-3 {
+        margin-left: 12px;
+    }
+    .font-size-m {
+        font-size: 25px;
+    }
+</style>
+
+<div class="container px-1 py-1" id="hanging-icons">
+    <div class="row g-4 py-1 row-cols-1 row-cols-lg-1">
+        <div class="col d-flex align-items-start">
+            <div class="flex-grow-1 p-lg-2">
+                <div class="row m-2 mb-0 mt-0">
+                    <div class="col-lg-7 col-md-12 col-sm-12">
+                        <div class=" shadow p-2">
+                            <p class="display-6 text-black">{{ content.title }}</p>
+
+							<div class="list rounded">
+								{% for value in poll_values %}
+								<div class="list-group-item list-group-item-action list-group-item-light"  onclick="triggerSelect({{value.id}});">
+									<span class="text-black">{{ value.value }}</span>&nbsp;&nbsp;&nbsp;
+									<span>( {{ value.votes.all|length }} )</span>
+								</div>
+								{% endfor %}
+							</div>
+
+                            <div class="d-flex flex-nowrap flex-row">
+                                <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span><span class="material-icons" onclick="triggerLike({{ content.id }}, 'like', 'details')">thumb_up</span>&nbsp;{{ content.likes.all|length }}</span></button>
+                                <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span><span class="material-icons" onclick="triggerDisLike({{ content.id }}, 'dislike', 'details')">thumb_down</span>&nbsp;{{ content.dislikes.all|length }}</span></button>
+                                <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span class=""><span class="material-icons text-black">visibility </span>&nbsp;{{ content.views.all|length }}</span></button>
+                                <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span class="material-icons text-black">share</span></button>
+                                {% if is_mine %}
+                                <a href="{% url 'blog:update_poll' poll_id=poll.id %}" class=""><button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0 m-0"><span class="material-icons text-success">update</span></button></a>
+                                <a href="{% url 'blog:delete_poll' poll_id=poll.id %}" class=""><button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0 m-0"><span><span class="material-icons text-danger">delete</span></button></a>
+                            {% endif %} 
+                            </div>
+            
+                            <div class="d-flex flex-row">
+                                <div class="flex-grow-1">
+                                    <a href="{% url 'account:details' subject_username=content.author.username %}" class="text-light font-weight-bold mb-0">
+                                    {% if content.author.profile_image %}
+                                    <img class="pp-image border border-dark rounded rounded-circle" src="{{ content.author.profile_image.url }}" alt="profile image" /><small>{% if content.author == request.user %}You{% else %}by {{ content.author }}{% endif %}</small></a>
+                                    {% endif %}
+                                    <small class="text-muted text-light tillium">{{ content.timestamp.date }}</small>
+                                </div>
+                                <div class="d-flex flex-shrink-1">
+
+                                    <div class="dropdown">
+                                        <a class="dropdown-toggle btn" id="dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false"><span class="material-icons">report</span></a>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdown-toggle">
+                                            <li class="dropdown-item my-0 py-0"><span class="text-secondary py-0">Please select one of the following reasons</span></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li class="dropdown-item" onclick="report('Contains sensetive/inappropriate content')">Contains sensetive/inappropriate content</li>
+                                            <li class="dropdown-item" onclick="report('Racist')">Racist</li>
+                                            <li class="dropdown-item" onclick="report('False facts')">False facts</li>
+                                        </ul>
+                                    </div><!--//app-user-dropdown--> 
+
+
+
+
+
+                                    <div class="icon-square bg-light text-dark ">
+                                        <button class="btn border" type="button"><span class="material-icons">settings</span></button>
+                                    
+                                    </div>
+                                </div>
+                            </div>    
+                        </div>
+                        {% if cat_recoms or author_recoms %}
+                            <div class="rounded shadow mt-4 bg-light p-2">
+                                <div class="row">
+                                    {% if cat_recoms %}
+                                        <div class="col-lg-6 col-md-12 col-sm-12">
+                                            <p class="h4 text-black">More like this</p>
+                                            <div class="list-group">
+                                                {% for recom in cat_recoms %}
+                                                    <a href="#" class="list-group-item list-group-item-action"></a>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if author_recoms %}
+                                        <div class="col-lg-6 col-md-12 col-sm-12">
+                                            <p class="h4 text-black">More from the geek</p>
+                                            <div class="list-group">
+                                                {% for recom in author_recoms %}
+                                                    <a href="#" class="list-group-item list-group-item-action">{{ recom }}</a>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-lg-5 col-md-12 col-sm-12">
+                        <div class="card border  shadow position-sticky" style="top: 6rem">
+                            {% include 'blog/comment/comments.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'blog/poll/select_jquery.html' %}
+
+<script type="text/javascript">
+
+    function triggerSelect(value_id) {
+        select(value_id, "{{ poll.id }}");
+    }
+
+
+    function report(reason) {
+        var url = "{% url 'report' %}";
+
+        payload = {
+            "csrfmiddlewaretoken": "{{ csrf_token }}",
+            "subject": "Poll",
+            "subject_id": {{ content.id }},
+            "reason": reason,
+        };
+        $.ajax({
+            type: 'POST',
+            dataType: "json",
+            url: url,
+            timeout: 5000,
+            data: payload,
+            success: function(data) {
+                console.log("SUCCESS")
+            },
+            error: function(data) {
+                console.error("ERROR...")
+            },
+            complete: function(data){
+                console.log(data)
+                if (data.responseJSON.response == "Successful") {
+                    alert("Report sent successfully , thank you for making Itranet a better place :)")
+                }
+                else if (data.responseJSON.response == "Inconsistent data") {
+                    location = "{% url 'error' code=100 %}"
+                }
+                else if (data.responseJSON.response == "404") {
+                    location = "{% url 'error' code=404 %}"
+                }
+
+            }
+        });
+    }
+
+</script>
+
+
+{% endblock content %}

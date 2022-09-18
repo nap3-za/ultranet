@@ -1,0 +1,149 @@
+
+.md-icon {
+  display: block;
+
+  padding: 0.5rem 1rem;
+  color: #0d6efd;
+  text-decoration: none;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .md-icon {
+    transition: none;
+  }
+}
+.md-icon:hover, .md-icon:focus {
+  color: #0a58ca;
+}
+.md-icon.disabled {
+  color: #6c757d;
+  pointer-events: none;
+  cursor: default;
+}
+
+.md-icon {
+  margin-bottom: -1px;
+  background: none;
+  border: 1px solid transparent;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+.md-icon:hover, .md-icon:focus {
+  border-color: #e9ecef #e9ecef #dee2e6;
+  isolation: isolate;
+}
+
+
+.md-icon {
+  color: #495057;
+  background-color: #fff;
+  border-color: #dee2e6 #dee2e6 #fff;
+}
+
+
+.md-icon {
+  background: none;
+  border: 0;
+  border-radius: 0.25rem;
+}
+
+.md-icon {
+  width: 100%;
+}
+
+.paduk {
+	font-family: 'Padauk', sans-serif;
+  font-weight: 400;
+}
+
+.page-title {
+  font-size: 40px;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.bolder {
+  font-weight: bolder;
+}
+
+.text-black {
+  color: black;
+}
+
+.bg-neutral {
+  background-color: #000a1e;
+}
+
+.bg-neutral-light {
+  background-color: #132f66;
+}
+
+.stroke {
+  background-color: white;
+  height: 2px;
+  width:  100%;
+  margin-bottom: 7px;
+  margin-top: 7px;
+}
+
+.dosis {
+  font-family: 'Dosis';
+}
+@font-face {
+  font-family: 'Dosis';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Font'),url("../../fonts/Dosis-Regular.ttf") format('truetype');
+}
+
+.tillium {
+  font-family: 'Tillium';
+}
+@font-face {
+  font-family: 'Tillium';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Font'),url("../../fonts/TitilliumWeb-Regular.ttf") format('truetype');
+}
+
+.noto-sans {
+  font-family: 'Noto Sans';
+}
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Font'),url("../../fonts/NotoSans.ttf") format('truetype');
+}
+
+.source-code {
+  font-family: 'Source Code';
+}
+@font-face {
+  font-family: 'Source Code';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Font'),url("../../fonts/SourceCode-Black.ttf") format('truetype');
+}
+
+.source-code-bold {
+  font-family: 'Source Code';
+}
+@font-face {
+  font-family: 'Source Code';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Font'),url("../../fonts/SourceCode-Bold.ttf") format('truetype');
+}
+
+.tauri {
+  font-family: 'Tauri';
+}
+@font-face {
+  font-family: 'Tauri';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Font'),url("../../fonts/Tauri-Regular.ttf") format('truetype');
+}

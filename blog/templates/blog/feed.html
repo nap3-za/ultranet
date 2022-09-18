@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Feed
+{% endblock %}
+
+{% block content %}
+
+<style type="text/css">
+    .bd-placeholder-img {
+    	font-size: 1.125rem;
+    	text-anchor: middle;
+    	-webkit-user-select: none;
+    	-moz-user-select: none;
+    	user-select: none;
+    }
+
+    @media (min-width: 768px) {
+    .bd-placeholder-img-lg {
+    font-size: 3.5rem;
+    	}
+    }
+    .image-container{
+    	max-width: 70px;
+    	height: auto;
+    }
+    .pp-image {
+        width: 35px;
+        height: 35px;
+        margin: 7px 10px 7px 7px;
+    }
+    .ml-3 {
+        margin-left: 12px;
+    }
+    .font-size-m {
+        font-size: 25px;
+    }
+</style>
+
+<div class="container px-1 py-1">
+    <div class="row py-3 row-cols-1 row-cols-lg-1 bg-light">
+
+    	<div class="featured">
+			<main>
+			{% include 'blog/snippets/trending.html' %}
+			</main>
+		</div>
+
+		<div class="toolbar">
+			<div class="row justify-content-center">
+				<!-- Quick post creatiion section -->
+				<div class="col-12">
+					<form method="post" action="{% url 'blog:create_content' content_type='Post' %}">
+						{% csrf_token%}
+			            <div class="form-floating">
+			                <input placeholder="What's on your mind ???" class="form-control" type="text" name="text" required="" id="id_text">
+			                <label for="floatingInput">What's on your mind ...</label>
+			            </div>
+						<input type="hidden" value="Anyone" name="visibility">
+						<input type="hidden" name="draft" checked="">
+						<input type="hidden" name="title" value="">
+						<input type="hidden" name="content_type" value="Post">
+						<input type="hidden" name="tags" value="">
+					</form>
+				</div>
+			</div>
+		</div>
+
+    	{% if contents %}
+	        <div class="row m-2 mb-0 mt-0">
+	        	{% for content in contents %}
+			        	<!-- content -->
+			        <div class="row my-1">
+			            <div class="col-lg-7 col-md-12 col-sm-12 px-0 mx-0 ">
+			            	<div class="border rounded p-1">
+
+			            		<!-- content author panel -->
+								<div class="d-flex flex-row border-bottom">
+			                        <div class="flex-grow-1">
+			                            <a href="{% url 'account:details' subject_username=content.0.author.username %}" class="text-light font-weight-bold mb-0">
+			                            {% if content.0.author.profile_image %}
+			                            <img class="pp-image border border-dark rounded rounded-circle" src="{{ content.0.author.profile_image.url }}" alt="profile image" /><small>{% if content.0.author == request.user %}You{% else %}by {{ content.0.author }}{% endif %}</small></a>
+			                            {% endif %}
+			                            <small class="text-muted tillium">{{ content.0.timestamp.date }}</small>
+			                        </div>
+			                        <div class="d-flex flex-shrink-1">
+			                            <div class="dropdown">
+			                                <a class="dropdown-toggle btn" id="dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false"><i class="fa fa-eye-slash "></i></a>
+			                                <ul class="dropdown-menu" aria-labelledby="dropdown-toggle">
+			                                    <li class="dropdown-item my-0 py-0"><span class="text-secondary py-0">Please select one of the following reasons</span></li>
+			                                    <li><hr class="dropdown-divider"></li>
+			                                    <li class="dropdown-item" onclick="report('Contains sensetive/inappropriate content', 'Content',{{content.0.id}})">Contains sensetive/inappropriate content</li>
+			                                    <li class="dropdown-item" onclick="report('Racist', 'Content',{{content.0.id}})">Racist</li>
+			                                    <li class="dropdown-item" onclick="report('False facts', 'Content',{{content.0.id}})">False facts</li>
+			                                </ul>
+			                            </div>
+			                        </div>
+			                    </div> 
+
+			                    {% if content.0.title %}
+			                        <p class="display-6 text-black text-start fw-bold">{{ content.0.title }}</p>
+			                    {% endif %}
+			                    
+			                    <div class="px-1"><a href="{% url 'blog:content' content_id=content.0.id %}">
+			                        {% if content.0.content_type == 'Poll' %}
+			    						<div class="list rounded">
+			    							{% for value in content.0.choice_set.all %}
+			    							<div class="list-group-item list-group-item-action list-group-item-light"onclick="triggerSelect({{value.id}});">
+			    								<span class="text-black">{{ value.value }}</span>&nbsp;&nbsp;&nbsp;
+			    								<span>[ {{ value.votes.all|length }} ]</span>
+			    							</div>
+			                                <div class="progress mb-3">
+			                                    <progress value="{{ value.votes.all|length }}" max="{{ content.3 }}" style="width: 100%;"></progress>
+			                                </div>
+			    							{% endfor %}
+			    						</div>
+			                        {% elif content.0.content_type == 'Post' %}
+			                            {% if not content.title %}
+			                            <p class="bold noto-sans text-center text-black fs-4">{{ content.0.text|escape|linebreaksbr|truncatechars:250 }}</p>
+			                            {% else %}
+			                            <p class="bold noto-sans">{{ content.0.text|escape|linebreaksbr|truncatechars:250 }}</p>
+			                            {% endif %}
+			                        {% endif %}
+			                    </div></a>
+
+			                    <!-- interaction panel -->
+			                    <div class="d-flex flex-nowrap flex-row border-top">
+			                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span><i class="fa fa-thumbs-up fa-lg" onclick="triggerLike({{ content.0.id}}, 'like')"></i>&nbsp;{{ content.0.likes.all|length }}</span></button>
+			                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span><i class="fa fa-thumbs-down fa-lg" onclick="triggerDisLike({{ content.0.id }}, 'dislike')"></i>&nbsp;{{ content.0.dislikes.all|length }}</span></button>
+			                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0" data-bs-toggle="modal" data-bs-target="#commentBackdropLive{{content.0.id}}"><span class=""><i class="fa fa-comment-alt fa-lg text-black"></i>&nbsp;{{ content.0.comment_set.all|length }}</span></button>
+			                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><i class="fa fa-share fa-lg text-black"></i></span></button>
+			                    </div>
+			                </div>
+			            </div>
+
+			            <!-- comments -->
+			            <div class="col-lg-5 col-md-12 col-sm-12 px-0 mx-0">
+							<div class="mx-lg-1 mx-xl-1 mx-xxl-1 bg-white shadow-sm">
+							    <div class="">
+							        {% if content.2 %}
+							            {% for comment in content.2 %}
+							            
+							                <div class="p-1 border">
+							                    <div class="d-flex flex-row ">
+							                        <div class="flex-grow-1">
+							                            <a href="{% url 'account:details' subject_username=comment.0.author.username %}" class="text-dark font-weight-bold mb-0 pt-2 pl-1">
+							                                <img class="pp-image border border-dark rounded rounded-circle" src="{{ comment.0.author.profile_image.url }}" alt="profile image" /><small>{% if comment.1 %}You{% else %}{{ comment.0.author }}{% endif %}</small><small class="text-muted ml-3" style="font-size: 13px">{{ comment.0.timestamp.date }}</small>
+							                            </a>
+							                        </div>
+							                    </div>
+
+							                    <div class="mx-2 py-0 border-top border-bottom">
+							                        <p class="ml-3 mb-0 fw-bold text-black">{{ comment.0.text }}</p>
+							                    </div>
+
+							                    {% if comment.2 %}
+							                        <div class="ms-4">
+							                            <div class="border-start">
+							                                <div class="d-flex flex-row">
+							                                    <div class="flex-grow-1">
+							                                        <a href="{% url 'account:details' subject_username=comment.2.author.username %}" class="text-dark font-weight-bold mb-0 pt-2 pl-1">
+							                                            <img class="pp-image border border-dark rounded rounded-circle" src="{{ comment.2.author.profile_image.url }}" alt="profile image" />
+							                                            <small>
+							                                                {% if comment.2.author == request.user %}You{% else %}{{ comment.2.author }}{% endif %}
+							                                            </small>
+							                                            <small class="text-muted ml-3 " style="font-size: 13px">
+							                                                replied to {% if comment.0.author == request.user %}You{% else %}{{ comment.0.author }}{% endif %}
+							                                            </small>
+							                                        </a>
+							                                        <small class="text-muted ml-3" style="font-size: 13px">{{ comment.0.timestamp.date }}</small>
+							                                    </div>
+							                                </div>
+
+							                                <div class=" border-top">
+							                                    <p class="px-1 fw-bold text-black">{{ comment.2.text }}</p>
+							                                </div>
+							                            </div>
+							                        </div>
+							                    {% endif %}
+							                </div>
+
+							            {% endfor %}
+							        {% else %}
+							        {% endif %}
+							    </div>
+							</div>
+			            </div>
+
+
+						<div class="modal fade" id="commentBackdropLive{{content.0.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="commentBackdropLive{{content.0.id}}Label" aria-hidden="true">
+						    <div class="modal-dialog">
+						    	<form class="form" method="POST" action="{% url 'blog:create_comment' content_id=content.0.id reply=0 %}">{% csrf_token %}
+						            <div class="modal-content">
+						                <div class="modal-header">
+						                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						                </div>
+						                <div class="modal-body">
+						                    <div class="card-header">
+									            <div class="form-floating">
+									                <input placeholder="Add A Comment" class="form-control" type="text" name="text" required="" id="id_text">
+									                <label for="floatingInput">Add A Comment</label>
+									            </div>
+						                    </div>
+
+						                    <div class="card-body mt-0 mb-0 p-0">
+						                    </div> <!-- End of card body-->
+						                </div>
+						                <div class="modal-footer">
+						                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						                    <button type="submit" class="btn btn-primary">Comment</button>
+						                </div>
+						            </div>
+								</form>
+						    </div>
+						</div> 
+					</div>
+
+	            {% endfor %}
+	        </div>
+
+			<p class="text-center">
+				{% if contents.has_previous %}
+					<button class="btn btn-primary"><a class="text-light" href="?page={{ contents.previous_page_number }}">&laquo; Previous</a></button>
+				{% endif %}
+					<small class="tillium bold m-2 text-light">Page {{ contents.number }} of {{ contents.paginator.num_pages }}</small>
+				{% if contents.has_next %}
+					<button class="btn btn-primary m-2"><a class="text-light" href="?page={{ contents.next_page_number }}">Next &raquo;</a></button><br>
+				{% endif %}
+			</p>
+        {% endif %}
+
+    </div>
+</div>
+
+
+
+{% include 'blog/snippets/interaction_jquery.html' %}
+
+{% if content_type == 'Poll' %}
+    {% include 'blog/poll/select_jquery.html' %}
+{% endif %}
+
+{% include 'feedback/report_jquery.html' %}
+
+{% endblock content %}
+

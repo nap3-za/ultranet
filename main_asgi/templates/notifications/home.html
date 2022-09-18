@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title%}
+Notifications
+{% endblock %}
+
+{% block content %}
+
+<div class="app-content pt-3 p-md-3 p-lg-4">
+	
+    <div class="container-fluid">
+        <div class="col-12 my-3 justify-content-center text-center">
+        	<a class="" href="{% url 'notifications:clear' %}"><button class="flex-fill w-50 btn btn-secondary mx-lg-5">Clear notifications</button></a>
+        </div>
+        
+        <div class="row pb-0">
+        	<div class="col-12" id="id_notifications">
+				{% for notification in notifications %}
+				<div class="app-card border shadow m-3  p-0">
+					<div class="card-body p-0 px-2">
+						<div class="d-flex flex-row flex-nowrap">
+							<div class="flex-grow-1">
+								<p class="tillium h6 py-2">{{ notification.verb }}</p>
+							</div>
+						</div>
+					
+						<div class="d-flex flex-row flex-nowrap pb-0 border-top">
+							<div class="flex-grow-1">
+								<small class="noto-sans">{{ notification.timestamp.date }}</small>
+							</div>
+							<div class="flex-shrink-1">
+								<a href="{% url 'notifications:noti_delete' %}?noti_id={{notification.id}}"><button class="btn btn-sm  p-0 m-0"><span class="material-icons">delete</span></button></a>
+							</div>
+						</div>
+
+					</div>
+
+
+				</div>
+				{% endfor %}
+        	</div>
+        </div>
+
+    </div>
+</div>
+
+
+
+{% include 'main_asgi/notification_home.html' %}
+{% endblock %}
+
+

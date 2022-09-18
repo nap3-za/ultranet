@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Update chatroom
+{% endblock %}
+
+{% block content %}
+
+
+		
+<div class="container px-1 py-1">
+    
+    <div class="row gy-4 justify-content-center">
+        <div class="col-12 col-lg-8">
+        	<h1 class="app-page-titl p-2">Update chatroom</h1>
+        	<div class="rounded p-lg-5 p-2 shadow mt-5 align-middle">
+
+        	<form class="form" method="POST">
+        		{% csrf_token %}
+				<div class="form-floating mb-3 ">
+				    <input type="text" name="room_name" class="form-control" maxlength="255" placeholder="Room name" id="create-room-name-input" required="" value="{{ room.room_name }}">
+				    <label for="floatingInput">Room name (must be unique)</label>
+				</div>
+				<div class="form-floating mb-3 ">
+				    <input type="text" name="title" class="form-control" maxlength="255" placeholder="Room title" id="create-room-name-input" required="" value="{{ room.title }}">
+				    <label for="floatingInput">Room title (does'nt have to be unique)</label>
+				</div>
+
+				<p class="text-dark bold">Accessibility:</p>
+				<select name="accessibility" id="id_accessibility" class="form-select mb-3">
+					<option value="{{ room.accessibility }}" selected="">{{ room.accessibility }}</option>
+					<option value="Everyone">Everyone</option>
+					<option value="All Friends">All Friends</option>
+					<option value="Selected Friends">Selected Friends</option>
+				</select>
+
+				<div class="form-group pb-4" id="check_allowed_friends">
+					<input type="checkbox" name="draft" id="id_draft" onclick="allowedFriends()" {% if room.>
+					<label for="checkbox">Select friends</label>
+				</div>
+			
+				<div id="div_allowed_friends" style="visibility: hidden;height: 0px;">
+					<p class="text-dark bold">Allowed friends:</p>
+					<select name="allowed_friends" id="id_allowed_friends" class="form-select mb-3" multiple="">
+						{% for friend in friends_list %}
+						<option value="{{ friend.0 }}" {% if friend.1 == True %}selected=""{% endif %}>{{ friend.0}}</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				{% for field in form %}
+				<p>
+				{% for error in field.errors %}
+				<p style="color: red">{{ error }}</p>
+				{% endfor %}
+				</p>
+				{% endfor %}
+				{% if form.non_field_errors %}
+				<div style="color: red">
+				<p>{{form.non_field_errors}}</p>
+				</div>
+				{% endif %}
+
+				{% for error in errors %}
+				<p style="color: red">{{ error }}</p>
+				{% endfor %}
+				
+				<p class="text-center"><button class="btn btn-primary btn-md btn-block-2" type="submit">Create</button></p>
+			</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	var state = false
+	function disableAllowedFriends() {
+		var allowed_friends = document.getElementById("div_allowed_friends");
+		allowed_friends.style.visibility = "hidden";
+		allowed_friends.style.height = "0px";
+		state = false;
+	};
+
+	function allowedFriends() {
+		if (state) {
+			disableAllowedFriends()
+		}
+		else {
+			enableAllowedFriends()
+		}
+	}
+
+	function enableAllowedFriends() {
+		var allowed_friends = document.getElementById("div_allowed_friends");
+		allowed_friends.style.visibility = "visible";
+		allowed_friends.style.height = "auto";
+		state = true;
+	}
+</script>
+
+
+{% endblock %}

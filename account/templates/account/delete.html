@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Account deleteion 
+{% endblock title %}
+
+{% block content %}
+
+<style type="text/css">
+	.bd-placeholder-img {
+		font-size: 1.125rem;
+		text-anchor: middle;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+	}
+	@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+	font-size: 3.5rem;
+		}
+	}
+	.image-container, .logo-icon{
+		max-width: 75px;
+		height: auto;
+	}
+</style>
+
+<div class="row mt-3 mb-3 justify-content-center">
+    <div class="row g-0 justify-content-center">
+	    <div class="col-12 col-lg-6 text-center p-5">
+		    <div class="d-flex flex-column align-content-end">
+			    <div class="">	
+					<h2 class="auth-heading text-center mt-3">Delete your account</h2>
+					<small class="tillium text-black">This action cannot be undone so think it through</small>
+				    <div class="app-auth-branding mb-4"><a class="app-logo" href="index.html"><img class="logo-icon me-2" src="{% static 'logos/light.svg' %}" alt="logo"></a></div>
+					
+			        <div class="auth-form-container text-start">
+						<form class="auth-form login-form" method="POST"> {% csrf_token %}        
+								<div class="form-floating my-1">
+									<input  class="form-control" type="email" name="email" maxlength="50" required="" id="floatingInput">
+									<label for="floatingInput">Email</label>
+								</div>
+
+							{% for field in form %}
+							<p>
+							{% for error in field.errors %}
+							<p style="color: red">{{ error }}</p>
+							{% endfor %}
+							</p>
+							{% endfor %}
+							{% if form.non_field_errors %}
+							<div style="color: red">
+							<p>{{form.non_field_errors}}</p>
+							</div>
+							{% endif %}
+
+							<div class="text-center">
+								<button type="submit" class="btn btn-primary w-50 mx-auto">Bye :(</button>
+							</div>
+						</form>
+					</div><!--//auth-form-container-->	
+
+			    </div><!--//auth-body-->
+		    
+		    </div><!--//flex-column-->   
+	    </div><!--//auth-main-col-->
+
+    </div><!--//row-->
+</div>
+
+{% endblock content %}

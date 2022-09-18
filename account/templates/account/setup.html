@@ -1,0 +1,375 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Finish setting up your account
+{% endblock title %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'assets/plugins/cropperjs/dist/cropper.min.css' %}">
+
+<style type="text/css">
+
+	.field-heading{
+		color: #737373;
+	}
+	#id_confirm{
+		color: green;
+	}
+	#id_confirm:hover {
+		opacity: 0.3;
+	}
+	#id_cancel:hover {
+		opacity: 0.3;
+	}
+	#id_cancel{
+		color: red;
+	}
+	.material-icons{
+		font-size: 30px;
+	}
+	.material-icons:hover{
+		cursor: pointer;
+	}
+
+	.textarea {
+		height: 180px;
+		max-height: 200px;
+	}
+
+
+
+	.bd-placeholder-img {
+	font-size: 1.125rem;
+	text-anchor: middle;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+@media (min-width: 768px) {
+.bd-placeholder-img-lg {
+font-size: 3.5rem;
+	}
+}
+.image-container{
+	max-width: 75px;
+	height: auto;
+}
+
+</style>
+
+
+<div class="container-fluid mb-5">
+
+
+	<div class="row mb-5 app-auth-wrapper">
+		<div class="col-12 auth-main-col text-center p-5">
+			<div class="d-flex flex-column align-content-end">
+				<div class="">	
+					<h2 class="auth-heading text-center">Setup your account</h2>
+					<div class="app-auth-branding mb-4"><a class="app-logo" href="index.html"><img class="logo-icon me-2" src="{% static 'logos/light.svg' %}" alt="logo"></a></div>
+					<form class="form-signin" method="post" enctype="multipart/form-data">
+						<div class="row justify-content-center">
+							<div class="col-lg-6 col-12">
+								{% csrf_token %}
+								<!-- Profile image container -->
+								<div class="row justify-content-between align-items-center mb-2">
+									<div class="mb-2" id="id_image_crop_confirm">
+										<span id="id_cancel" class="material-icons">cancel</span>
+										<span id="id_confirm" class="material-icons">check</span>
+									</div>
+
+									<div class="d-flex flex-row image-container" id="id_image_container">
+										<div class="flex-grow-1">
+											<img  style="width: 75px;height: 75px" class="border border-dark rounded-circle img-fluid profile-image" id="id_profile_image_display" src="{{request.user.profile_image.url}}" alt="profile pic">
+										</div>
+
+									  <div class="">
+										  <div class="middle flex-shrink-1 text-end pt-3" id="id_middle_container">
+											  <div class="text btn app-btn-secondary" id="id_text">update</div>
+										  </div>
+									  </div><!--//col-->
+
+									</div>
+							  	</div><!--//row-->
+								  
+								<input class="d-none" type="file" name="profile_image" id="id_profile_image" value="" onchange="readURL(this)">
+							
+								<div class="d-flex flex-row justify-content-between align-items-center ">
+									<div class="flex-grow-1">
+										<div class="item-label">
+											Biography (max is 250 characters):
+										</div>
+										<div class="item-data">
+											<textarea name="bio" aria-label="With textarea" class="form-control textarea mb-3" maxlength="250" id="id_bio" >{% if request.user.bio %}{{ request.user.bio }}{% endif %}</textarea>
+										</div>
+									</div><!--//col-->
+								</div><!--//row-->
+							</div>
+
+							<div class="col-lg-6 col-12 pt-xl-5 my-xl-5">
+
+												
+								<div class="d-flex flex-row justify-content-between align-items-center my-1">
+									<div class="flex-grow-1">
+										<div class="item-data">
+											<div class="form-floating">
+												<input {% if request.user.github == None %}value=""{% else %}value="{{ request.user.github }}"{% endif %}  class="form-control" type="text" name="github" maxlength="30">
+												<label for="floatingInput">Github username</label>
+											</div>
+										</div>
+									</div><!--//col-->
+								</div><!--//row-->
+
+					
+								<div class="d-flex flex-row justify-content-between align-items-center my-1">
+									<div class="flex-grow-1">
+										<div class="item-data">
+											<div class="form-floating">
+												<input class="form-control" {% if request.user.stack == None %}value=""{% else %}value="{{ request.user.stack }}"{% endif %} type="text" name="stack" maxlength="50">
+												<label for="floatingInput">Stackoverflow username</label>
+											</div>
+										</div>
+									</div><!--//col-->
+								</div><!--//row-->
+							
+							
+								<div class="d-flex flex-row justify-content-between align-items-center my-1">
+									<div class="flex-grow-1">
+										<div class="item-data">
+											<div class="form-floating">
+												<input {% if request.user.youtube == None %}value=""{% else %}value="{{ request.user.youtube }}"{% endif %}class="form-control" type="text" name="youtube" maxlength="30">
+												<label for="floatingInput">YouTube channel</label>
+											</div>
+										</div>
+									</div><!--//col-->
+								</div><!--//row-->
+
+								<div class="d-flex flex-row justify-content-between align-items-center my-1">
+									<div class="flex-grow-1">
+										<div class="item-data">
+											<div class="form-floating">
+												<input {% if request.user.insta == None %}value=""{% else %}value="{{ request.user.insta }}"{% endif %}class="form-control" type="text" name="insta" maxlength="30">
+												<label for="floatingInput">Instagram account</label>
+											</div>
+										</div>
+									</div><!--//col-->
+								</div><!--//row-->
+
+
+							</div>
+
+							<div class="col-12 border-top pt-3">
+
+								{% for field in form %}
+								<p>
+								{% for error in field.errors %}
+								<p style="color: red">{{ error }}</p>
+								{% endfor %}
+								</p>
+								{% endfor %}
+								{% if form.non_field_errors %}
+								<div style="color: red">
+								<p>{{form.non_field_errors}}</p>
+								</div>
+								{% endif %}
+								<p class="text-center mb-2"><button class="btn app-btn-primary btn-sm" type="submit">Next</button>&nbsp; or <a class="tillium text-decoration-underline fw-bold" href="{% url 'account:details' subject_username=request.user.username %}">skip</a></p>
+							</div>
+						</div>
+					</form>
+		        </div>
+		    </div>
+		</div>
+	</div>
+</div>
+
+
+<script type="text/javascript">
+
+	var cropper;
+	var imageFile;
+	var base64ImageString;
+	var cropX;
+	var cropX;
+	var cropWidth;
+	var cropHeight;
+
+	enableImageOverlay()
+
+	function enableImageOverlay(){
+		var text = document.getElementById("id_text")
+
+
+		var profileImage = document.getElementById("id_profile_image")
+		profileImage.style.opacity = "1"
+		profileImage.style.display = "block"
+		profileImage.style.width = "100%"
+		profileImage.style.height = "auto"
+		profileImage.style.transition = ".5s ease"
+		profileImage.style.backfaceVisibility  = "hidden"
+		profileImage.style.cursor = "pointer"
+
+		var middleContainer = document.getElementById("id_middle_container")
+
+
+		var imageContainer = document.getElementById("id_image_container")
+
+		imageContainer.addEventListener("click", function(event){
+			document.getElementById('id_profile_image').click();
+		});
+
+		var cropConfirm = document.getElementById("id_image_crop_confirm")
+		cropConfirm.classList.remove("d-flex")
+		cropConfirm.classList.remove("flex-row")
+		cropConfirm.classList.remove("justify-content-between")
+		cropConfirm.classList.add("d-none")
+		
+	}
+
+	function disableImageOverlay(){
+		var profileImage = document.getElementById("id_profile_image_display")
+		var middleContainer = document.getElementById("id_middle_container")
+		var imageContainer = document.getElementById("id_image_container")
+		var text = document.getElementById("id_text")
+
+		profileImage.style.opacity = "1"
+
+		document.getElementById('id_image_container').removeEventListener("click", function(event){
+			event.preventDefault();
+			// do nothing
+		});
+		document.getElementById('id_profile_image').addEventListener("click", function(event){
+			event.preventDefault();
+			// do nothing
+		});
+
+		var cropConfirm = document.getElementById("id_image_crop_confirm")
+		cropConfirm.classList.remove("d-none")
+		cropConfirm.classList.add("d-flex")
+		cropConfirm.classList.add("flex-row")
+		cropConfirm.classList.add("justify-content-between")
+
+		var confirm = document.getElementById("id_confirm")
+		confirm.addEventListener("click", function(event){
+			console.log("Sending crop data for processing...")
+			cropImage(
+				imageFile, 
+				cropX, 
+				cropY, 
+				cropWidth,
+				cropHeight
+			)
+		})
+
+		var cancel = document.getElementById("id_cancel")
+		cancel.addEventListener("click", function(event){
+			console.log("Reloading window...")
+			window.location.reload();
+		})
+	}
+
+	/* return null if invalid or base64String if valid */
+	function isImageSizeValid(image){
+		console.log("max size: {{DATA_UPLOAD_MAX_MEMORY_SIZE}}")
+		// console.log(image)
+		var startIndex = image.indexOf("base64,") + 7;
+		var base64str = image.substr(startIndex);
+		var decoded = atob(base64str);
+		console.log("FileSize: " + decoded.length);
+		if(decoded.length>= "{{DATA_UPLOAD_MAX_MEMORY_SIZE}}"){
+			return null
+		}
+		return base64str
+	}
+
+	function cropImage(image, x, y, width, height){
+		base64ImageString = isImageSizeValid(image)
+
+		if(base64ImageString != null){
+			var requestData = {
+				"csrfmiddlewaretoken": "{{ csrf_token }}",
+				"image": base64ImageString,
+				"cropX": cropX,
+				"cropY": cropY,
+				"cropWidth": cropWidth,
+				"cropHeight": cropHeight
+			}
+			$.ajax({
+				type: 'POST',
+				dataType: "json",
+				url: "{% url 'account:crop_image' user_id=request.user.id %}",
+				data: requestData,
+				timeout: 10000,
+				success: function(data) {
+					if(data.result == "success"){
+						document.getElementById("id_cancel").click()
+					}
+					else if(data.result == "error"){
+						alert(data.exception)
+						document.getElementById("id_cancel").click()
+					}
+				},
+				error: function(data) {
+					console.error("ERROR...", data)
+				},
+				complete: function(data){
+				}
+			});
+		}
+		else{
+			alert("Upload an image smaller than 10 MB");
+			document.getElementById("id_cancel").click()
+		}
+	}
+
+	/*
+		Called when a new image is selected from file chooser dialog
+	*/
+	function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+            	disableImageOverlay()
+            	var image = e.target.result
+            	var imageField = document.getElementById('id_profile_image_display')
+                imageField.src = image
+				cropper = new Cropper(imageField, {
+					aspectRatio: 1/1,
+					crop(event) {
+						// console.log("CROP START")
+						// console.log("x: " + event.detail.x);
+						// console.log("y: " + event.detail.y);
+						// console.log("width: " + event.detail.width);
+						// console.log("height: " + event.detail.height);
+						setImageCropProperties(
+							image,
+							event.detail.x,
+							event.detail.y,
+							event.detail.width,
+							event.detail.height
+						)
+					},
+				});
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
+    function setImageCropProperties(image, x, y, width, height){
+		imageFile = image
+		cropX = x
+		cropY = y
+		cropWidth = width
+		cropHeight = height
+	}
+
+</script>
+<script type="module" src="{% static 'assets/plugins/cropperjs/dist/cropper.min.js' %}"></script>
+
+{% endblock content %}
+
+

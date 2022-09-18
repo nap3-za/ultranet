@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Create an account
+{% endblock title %}
+
+{% block content %}
+
+<style type="text/css">
+	.bd-placeholder-img {
+	font-size: 1.125rem;
+	text-anchor: middle;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+@media (min-width: 768px) {
+.bd-placeholder-img-lg {
+font-size: 3.5rem;
+	}
+}
+.image-container{
+	max-width: 75px;
+	height: auto;
+}
+
+</style>
+
+
+<div class="container-fluid mb-5">
+
+
+<div class="row g-0 app-auth-wrapper">
+	<div class="col-12 auth-main-col text-center p-5">
+		<div class="d-flex flex-column align-content-end">
+			<div class=" mx-auto">	
+				<h2 class="auth-heading text-center">Do you want to setup your profile and settings? highly recommend you do it</h2>
+				<p class="fw-normal text-muted mb-0 pb-0">Lorem ipsum dolor sit amet consectetur adipisicing elit</p>
+				<div class="app-auth-branding mb-4"><a class="app-logo" href="index.html"><img class="logo-icon me-2" src="{% static 'logos/light.svg' %}" alt="logo"></a></div>
+				
+	                <p class="text-center py-3"><a class="" href="{% url 'account:update_profile' %}"><button class="btn app-btn-primary btn-md">Yes</button></a>
+	                <a class="" href="{% url 'account:details' subject_username=request.user.username %}"><button class="btn app-btn-secondary btn-md">Later</button></a></p>
+
+	            </div>
+	        </div>
+	    </div>
+	</div>
+</div>
+
+{% endblock content %}

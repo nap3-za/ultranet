@@ -1,0 +1,145 @@
+{% load static %}
+<div class="mx-lg-1 mx-xl-1 mx-xxl-1 shadow-sm">
+    <div class="">
+        <form class="form" method="POST" action="{% url 'blog:create_comment' content_id=content.id reply=0 %}">{% csrf_token %}
+            <div class="form-floating">
+                <input placeholder="Add A Comment" class="form-control" type="text" name="text" required="" id="id_text">
+                <label for="floatingInput">Add A Comment</label>
+            </div>
+        </form>
+    </div>
+
+    <div class="">
+        {% if comments %}
+            {% for comment in comments %}
+            
+                <div class="p-1 border bg-white">
+                    <div class="d-flex flex-row ">
+                        <div class="flex-grow-1">
+                            <a href="{% url 'account:details' subject_username=comment.0.author.username %}" class="text-dark font-weight-bold mb-0 pt-2 pl-1">
+                                <img class="pp-image border border-dark rounded rounded-circle" src="{{ comment.0.author.profile_image.url }}" alt="profile image" /><small>{% if comment.1 %}You{% else %}{{ comment.0.author }}{% endif %}</small><small class="text-muted ml-3" style="font-size: 13px">{{ comment.0.timestamp.date }}</small>
+                            </a>
+                        </div>
+                        {% if comment.1 %}
+                            <div class="flex-shrink-1">
+                                <div class="dropdown px-0">
+                                    <a class="dropdown-toggle btn" id="dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdown-toggle">
+                                        <li class="dropdown-item">
+                                            <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#editCollapseNo{{comment.0.id}}" aria-controls="editCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                                                <i class="fa fa-pencil-alt text-success"></i><small class="tillium px-3">update</small>
+                                            </button>
+                                        </li>
+                                        <li class="dropdown-item">
+                                            <a href="{% url 'blog:delete_comment' comment_id=comment.0.id %}" class="text-decoration-none text-danger btn"><i class="fa fa-trash-alt fa-lg"></i><small class="tillium px-3">delete</small></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        {% else %}
+
+                            <div class="flex-shrink-1">
+                                <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#replyCollapseNo{{comment.0.id}}" aria-controls="replyCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                                    <i class="fa fa-share fa-lg">reply</i>
+                                </button> 
+                            </div>
+
+                        {% endif %}
+                    </div>
+
+                    <div class="mx-2 py-0 border-top border-bottom">
+                        <p class="ml-3 mb-0 fw-bold text-black">{{ comment.0.text }}</p>
+                    </div>
+                    
+                    <div class="">        
+                        {% if comment.1 %}
+                            <div class="collapse" id="editCollapseNo{{comment.0.id}}" > 
+                                <form method="POST" action="{% url 'blog:update_comment' comment_id=comment.0.id %}">
+                                    {% csrf_token %}
+                                        <div class="form-floating">
+                                            <input placeholder="update..." class="form-control" type="text" name="text" required="" value="{{ comment.0.text }}" id="id_text">
+                                            <label for="floatingInput">update...</label>
+                                        </div>
+                                        <input type="hidden" id="id_comment_id" name="comment_id" value="{{ comment.0.id }}">
+                                    </div>
+                                </form>
+                            </div>
+                        {% else %}
+
+                            <div class="collapse" id="replyCollapseNo{{comment.0.id}}" >
+                                <form method="POST" action="{% url 'blog:create_comment' content_id=content.id reply=comment.0.id %}">{% csrf_token %}
+                                    <div class="form-floating">
+                                        <input placeholder="Reply..." class="form-control" type="text" name="text" required="" id="id_text">
+                                        <label for="floatingInput">Reply...</label>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {% if comment.2 %}
+                        <div class="">
+                        {% for reply in comment.2 %}
+                       
+                            <div class="mx-4 border border-left">
+                                <div class="d-flex flex-row">
+                                    <div class="flex-grow-1">
+                                        <a href="{% url 'account:details' subject_username=reply.author.username %}" class="text-dark font-weight-bold mb-0 pt-2 pl-1">
+                                            <img class="pp-image border border-dark rounded rounded-circle" src="{{ reply.author.profile_image.url }}" alt="profile image" />
+                                            <small>
+                                                {% if creply.author == request.user %}You{% else %}{{ reply.author }}{% endif %}
+                                            </small>
+                                            <small class="text-muted ml-3 " style="font-size: 13px">
+                                                replied to {% if comment.0.author == request.user %}You{% else %}{{ comment.0.author }}{% endif %}
+                                            </small>
+                                        </a>
+                                        <small class="text-muted ml-3" style="font-size: 13px">{{ comment.0.timestamp.date }}</small>
+                                    </div>
+
+                                    {% if reply.author == request.user %}
+                                        <div class="flex-shrink-1">
+                                            <div class="dropdown px-0">
+                                                <a class="dropdown-toggle btn" id="dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
+                                                <ul class="dropdown-menu" aria-labelledby="dropdown-toggle">
+                                                    <li class="dropdown-item">
+                                                        <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#editReplyCollapseNo{{reply.id}}" aria-controls="editReplyCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                                                            <i class="fa fa-pencil-alt text-success"></i><small class="tillium px-3">update</small>
+                                                        </button>
+                                                    </li>
+                                                    <li class="dropdown-item">
+                                                        <a href="{% url 'blog:delete_comment' comment_id=reply.id %}" class="text-decoration-none text-danger btn"><i class="fa fa-trash-alt fa-lg"></i><small class="tillium px-3">delete</small></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mx-2 border-top">
+                                    <p class="ml-3 mb-0 fw-bold text-black">{{ reply.text }}</p>
+                                </div>
+                
+
+                                {% if reply.author == request.user %}
+                                    <div class="collapse" id="editReplyCollapseNo{{reply.id}}" >
+                                        <form method="POST" action="{% url 'blog:update_comment' comment_id=reply.id %}">{% csrf_token %}
+                                              <div class="form-floating">
+                                                <input placeholder="update..." class="form-control border border-info" type="text" value="{{ reply.text }}" name="text" required="" id="id_text">
+                                                <label for="floatingInput">update...</label>
+                                            </div>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+            {% endfor %}
+        {% else %}
+        {% endif %}
+    </div>
+
+</div> <!-- End of card body-->
+

@@ -1,0 +1,35 @@
+<script type="text/javascript">
+	function interact(content_id, func, like_origin) {
+		var url = "{% url 'blog:interact' %}";
+
+		payload = {
+		    "content_id": content_id,
+		    "function": func,
+	        "like_origin": like_origin,
+		};
+		$.ajax({
+			type: 'GET',
+			dataType: "json",
+			url: url,
+			timeout: 5000,
+			data: payload,
+			success: function(data) {
+				console.log("SUCCESS")
+			},
+			error: function(data) {
+				console.error("ERROR...")
+			},
+			complete: function(data){
+	            location.reload()
+			}
+		});
+	}
+
+	function triggerLike(content_id, func) {
+	  interact(content_id, func)
+	}
+
+	function triggerDisLike(content_id, func) {
+	  interact(content_id, func)
+	}
+</script>

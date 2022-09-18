@@ -1,0 +1,42 @@
+{% load static %}
+
+
+
+<div class="d-flex flex-nowrap flex-row p-lg-3 border border-dark p-2">
+    <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span><span class="material-icons" onclick="triggerLike({{ content.0.id }}, 'like')">thumb_up</span>&nbsp;{{ content.0.likes.all|length }}</span></button>
+    <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span><span class="material-icons" onclick="triggerDisLike({{ content.0.id }}, 'dislike')">thumb_down</span>&nbsp;{{ content.0.dislikes.all|length }}</span></button>
+
+    <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#commentBackdropLive"></button>
+    <div class="modal fade" id="commentBackdropLive" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="commentBackdropLiveLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="commentBackdropLiveLabel">Comment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card-header">
+                        <div class="input-group">
+                            <input type="text" class="form-control border border-secondary shadow" id="id_comment_input" placeholder="Add a comment...">
+                            <span class="input-group-append">
+                                <button class="btn btn-secondary border rounded-right shadow" type="button" onclick="triggerAddComment(0, {{content.0.id}})">Go!</button>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-body mt-0 mb-0 p-0">
+
+                    </div> <!-- End of card body-->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Comment</button>
+                </div>
+            </div>
+        </div>
+    </div> 
+    <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span class="material-icons text-black">share</span></button>
+
+    <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span><span class="material-icons" id="id_set_featured_{{ content.0.id }}" onclick="setFeatured({{ content.0.id }})">star</button>
+
+</div>

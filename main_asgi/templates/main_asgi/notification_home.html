@@ -1,0 +1,229 @@
+<!-- 
+	Connects auth user to their user channel 
+-->
+{% load static %}
+
+
+<script src="{% static 'lib/reconnecting-websocket.js' %}"></script>
+
+<script type="text/javascript">
+	var mainSock = null;
+	var channelName = null;
+
+	onStart()
+
+	function onStart(){
+		setupMainSock()
+	}
+
+	function setupMainSock(){
+
+		// Correctly decide between ws:// and wss://
+		var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+		{% if not debug_mode %}
+			var ws_path = ws_scheme + '://' + window.location.host + "/" + "{{ request.user.username }}" + "/"; // development
+		{% else %}
+			var ws_path = ws_scheme + '://' + window.location.host + ":8001/" + "{{ request.user.username }}" + "/"; // production
+		{% endif %}
+		
+		
+		
+		mainSock = new ReconnectingWebSocket(ws_path);
+
+		// Handle incoming messages
+		mainSock.onmessage = function(message) {
+	
+			var data = JSON.parse(message.data);
+
+			if (data.noti_count) {
+				set_noti_count(data)
+			};
+			if (data.incoming_notification) {
+				appendNoti(data, from_socket=true)
+				appendNotiCard(data)
+			}
+			if (data.noti == "true") {
+				if (data["receiver"] == "{{ request.user.username }}"){
+					getNotification()
+				}
+			}
+			if (data.noti_payload) {
+				handleNotificationsPayload(data.notifications)
+			}
+
+		};	
+
+		mainSock.addEventListener("open", function(e){
+			mainSock.send(JSON.stringify({
+				"command": "join",
+				"room_id": "{{ channel.id }}",
+				"room_type": "user_channel",
+			}));	
+		})
+
+	    if (mainSock.readyState == WebSocket.OPEN) {
+	    	console.log("UiSocket OPEN")
+	    } else if (mainSock.readyState == WebSocket.CONNECTING){
+	        console.log("UiSocket connecting..")
+	    }
+		
+	}
+
+	function handleNotificationsPayload(notifications) {
+		notifications.forEach(function(notification){
+			appendNoti(notification, from_socket=false)
+	})}
+
+	function getNotification() {
+		mainSock.send(JSON.stringify({
+			"command": "get_notification",
+		}));		
+	}
+
+	function appendNoti(data, from_socket) {
+		var noti_parent = document.getElementById("noti_container")
+		var noti_container = document.createElement("div")
+		noti_container.classList.add("item")
+		noti_container.classList.add("p-3")
+
+		var noti_content = document.createElement("div")
+		noti_content.classList.add("row")
+		noti_content.classList.add("gx-2")
+		noti_content.classList.add("justify-content-between")
+		noti_content.classList.add("align-items-center")
+
+		var pp_container = document.createElement("div")
+		pp_container.classList.add("col-auto")
+
+		var profileImage = document.createElement("img")
+		profileImage.classList.add("profile-image")
+		profileImage.classList.add("rounded-circle")
+		profileImage.classList.add("img-fluid")
+		profileImage.src = "{% static '567543567' %}".replace("567543567", data["profile_image"])
+
+		pp_container.appendChild(profileImage)
+		noti_content.appendChild(pp_container)
+
+		var noti_verb = document.createElement("div")
+		noti_verb.classList.add("col")
+		
+		var info_div = document.createElement("div")
+		info_div.classList.add("info")
+
+		var desc = document.createElement("div")
+		desc.classList.add("desc")
+		desc.innerHTML = data["notification_content"]
+
+		var meta = document.createElement("div")
+		meta.classList.add("meta")
+		meta.innerHTML = data["natural_timestamp"]
+
+		info_div.appendChild(desc)
+		info_div.appendChild(meta)
+		noti_verb.appendChild(info_div)
+
+		noti_content.appendChild(noti_verb)
+		noti_container.appendChild(noti_content)
+		noti_parent.appendChild(noti_container)
+
+		if (from_socket) {
+			var noti_icon = document.getElementById("noti_icon")
+			noti_icon.classList.add("text-primary")
+			noti_icon.innerHTML = "notifications_active"
+			
+			setTimeout(function () {
+				noti_icon.classList.remove("text-primary")
+				noti_icon.innerHTML = "notifications"
+			},700)
+		}
+
+	}
+
+
+	function appendNotiCard(data) {
+
+		var card = document.createElement("div")
+		card.classList.add("app-card")
+		card.classList.add("border")
+		card.classList.add("shadow")
+		card.classList.add("m-3")
+
+		var card_header = document.createElement("div")
+		card_header.classList.add("card-body")
+		card_header.classList.add("p-0")
+		card_header.classList.add("px-2")
+
+		var flex_row = document.createElement("div")
+		flex_row.classList.add("d-flex")
+		flex_row.classList.add("flex-row")
+		flex_row.classList.add("flex-nowrap")
+
+		var flex_grow = document.createElement("div")
+		flex_grow.classList.add("flex-grow-1")
+
+		var sender = document.createElement("p")
+		sender.classList.add("tillium")
+		sender.classList.add("h6")
+		sender.classList.add("py-2")
+		sender.innerHTML = data["notification_content"]
+		flex_grow.appendChild(sender)
+		flex_row.appendChild(flex_grow)
+		card_header.appendChild(flex_row)
+
+		var flex_row_two = document.createElement("div")
+		flex_row_two.classList.add("d-flex")
+		flex_row_two.classList.add("flex-row")
+		flex_row_two.classList.add("flex-nowrap")
+		flex_row_two.classList.add("border-top")
+		flex_row_two.classList.add("pb-0")
+
+		var flex_grow_two = document.createElement("div")
+		flex_grow_two.classList.add("flex-grow-1")
+		var timestamp = document.createElement("small")
+		timestamp.classList.add("noto-sans")
+		timestamp.innerHTML = data["natural_timestamp"]
+		flex_grow_two.appendChild(timestamp)
+		flex_row_two.appendChild(flex_grow_two)
+
+
+		var flex_shrink = document.createElement("div")
+		flex_shrink.classList.add("flex-shrink-1")	
+
+		var del_link = document.createElement("a")
+		del_link.setAttribute("href","{% url 'notification:noti_delete' %}?noti_id="+data["noti_id"])
+		var del_btn = document.createElement("button")
+		del_btn.classList.add("btn")
+		del_btn.classList.add("btn-sm")
+		del_btn.classList.add("p-0")
+		del_btn.classList.add("mx-2")
+		icon = document.createElement("span")
+		icon.classList.add("material-icons")
+		icon.innerHTML = "delete"
+		del_btn.appendChild(icon)
+		del_link.appendChild(del_btn)
+		flex_shrink.appendChild(del_link)
+
+
+		flex_row_two.appendChild(flex_shrink)
+
+		card_header.appendChild(flex_row_two)
+
+		card.appendChild(card_header)
+
+
+		var notifications = document.getElementById("id_notifications")
+		notifications.prepend(card)
+
+	}
+
+	function set_noti_count(data) {
+		var noti = document.getElementById("noti_count");
+		noti.innerHTML = data["noti_count"]
+
+	}
+
+
+</script>
+
+
+<!-- Send notifications payload from consumer

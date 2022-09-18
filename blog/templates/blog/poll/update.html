@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+Update poll
+{% endblock title %}
+
+{% block content %}
+<div class="container-fluid mt-2 m-2">
+	<div class="row justify-content-center">
+		<div class="col-lg-6 col-md-12">
+		<div class="shadow rounded p-lg-4 p-2">
+
+			<p class="display-6 p-3 text-center tillium">{{ poll.content.title }}</p>
+			<form method="POST">{% csrf_token %}
+				<div class="form-floating input-group mb-3">
+					<input type="text" class="form-control border" name="title" id="id_title" value="{{ poll.content.title }}">
+					<label for="floatingInput">Title</label>
+					<button id="id_comment_btn" class="btn btn-primary border rounded-right shadow input-group-append" type="submit"><span class="material-icons">check</span></button>		
+				</div>
+
+
+
+				<div class="">
+					<div class="list-group mb-3">
+						{% for value in poll_values %}
+						<div class="list-group-item  list-group-item-light" id="id_value_{{ value.id }}">
+							<div class="form input-group mt-0 ">
+								<input id="id_value" type="text" value="{{ value.value }}" name="value{{value.id}}" class="form-control border" maxlength="200" placeholder="{{ value.value }}">
+								<button class="input-group-append" type="button" onclick="triggerUpdate({{value.id}});"><span class="material-icons">check</span></button>
+								{% if not cannot_delete %}
+								<button class="input-group-append" type="button" onclick="triggerDelete({{value.id}});"><span class="material-icons">delete</span></button>
+								{% endif %}
+							</div>
+							<span class="bold dosis h6 bold p-1">{{ value.likes.all|length }} clicks</span>
+						</div>
+						{% endfor %}
+					</div>
+				</div>
+
+				<div class="form input-group border">
+					<input id="id_new_value" type="text" name="new_value" class="form-control border" maxlength="200" placeholder="New poll option">
+					<button class="input-group-append" type="button" onclick="triggerCreateValue();"><span class="material-icons">add</span></button>
+				</div>
+
+				<div class="form-group p-2">
+					<input type="checkbox" name="draft" id="id_draft" {% if poll.content.draft %}checked=""{% endif %}>
+					<label for="checkbox">Draft</label>
+				</div>
+
+				{% if is_mine %}
+					<p class="text-center pt-3 pb-0"><a href="{% url 'blog:delete_poll' poll_id=poll.id %}" class="text-decoration-none"><button type="button" class="btn btn-danger btn-block-2">Delete</button></a></p>
+				{% endif %}
+
+				{% for field in form %}
+				<p>
+				{% for error in field.errors %}
+				<p style="color: red">{{ error }}</p>
+				{% endfor %}
+				</p>
+				{% endfor %}
+				{% if form.non_field_errors %}
+				<div style="color: red">
+				<p>{{ form.non_field_errors }}</p>
+				</div>
+				{% endif %}
+
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<script type="text/javascript">	
+	function onUpdate() {
+		location.reload()
+	}	
+
+    function triggerUpdate(value_id) {
+    	var value = ""
+    	value = document.getElementById("id_value").value;
+        update(value_id, value, onUpdate);
+    }
+
+    function triggerCreateValue() {
+    	var value = ""
+    	value = document.getElementById("id_new_value").value;
+        create_value(value, onUpdate);
+    }
+
+    function triggerDelete(value_id) {
+        delete_value(value_id, onUpdate);
+    }
+</script>
+
+{% include 'blog/poll/update_jquery.html' %}
+{% include 'blog/poll/delete_jquery.html' %}
+{% include 'blog/poll/create_value.html' %}
+{% endblock %}

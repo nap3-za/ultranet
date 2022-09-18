@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Update settings
+{% endblock title %}
+
+{% block content %}
+<style type="text/css">
+
+	.field-heading{
+		color: #737373;
+	}
+	#id_confirm{
+		color: green;
+	}
+	#id_confirm:hover {
+		opacity: 0.3;
+	}
+	#id_cancel:hover {
+		opacity: 0.3;
+	}
+	#id_cancel{
+		color: red;
+	}
+	.material-icons{
+		font-size: 30px;
+	}
+	.material-icons:hover{
+		cursor: pointer;
+	}
+
+	.bd-placeholder-img {
+		font-size: 1.125rem;
+		text-anchor: middle;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+	}
+	.textarea {
+		height: 180px;
+		max-height: 200px;
+	}
+
+	@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+	font-size: 3.5rem;
+		}
+	}
+
+		.bd-placeholder-img {
+		font-size: 1.125rem;
+		text-anchor: middle;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+	}
+	@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+	font-size: 3.5rem;
+		}
+	}
+	.image-container{
+		max-width: 75px;
+		height: auto;
+	}
+
+</style>
+<div class="container px-1 py-1">
+	<section class="bg-light pt-3" id="account">
+		<div class="container-xl">	
+			<div class="text-wrap">		    
+				<h1 class="app-page-title">Settings</h1>
+				<a href="#account_section"><button class="btn app-btn-secondary">Account</button></a>
+				<a href="#privacy_section"><button class="btn app-btn-secondary">Data &amp; Privacy</button></a>
+				<a href="#notifications_section"><button class="btn app-btn-secondary">Notifications</button></a>
+			<hr class="mb-4" id="account_section">
+	            <div class="row g-4 settings-section">
+	                <div class="col-12 col-md-4">
+		                <h3 class="section-title">Account</h3>
+		                <div class="section-intro">Settings section intro goes here. Lorem ipsum dolor sit amet, consectetur adipiscing elit. <a href="help.html">Learn more</a></div>
+	                </div>
+	                <div class="col-12 col-md-8">
+		                <div class="app-card app-card-settings shadow-sm p-4">
+						    <div class="app-card-body">
+							    
+								<form method="POST" action="{% url 'account:settings' page='account' %}">
+									<div class="row justify-content-center">
+										<div class="col-12">
+											{% csrf_token %}
+											<div class="form-floating my-1">
+												<input class="form-control" type="email" name="email" maxlength="254" autofocus="" value="{{ request.user.email }}" id="id_email">
+												<label for="floatingInput">Email address</label>
+											</div>
+			
+											<div class="form-floating my-1">
+												<input class="form-control" type="text" name="username" maxlength="30" value="{{ request.user.username }}" id="id_username">
+												<label for="floatingInput">Username</label>
+											</div>
+			
+			
+											<div class="form-floating my-1">
+												<input  class="form-control" type="text" name="name" maxlength="50" value="{{ request.user.name }}" id="id_name">
+												<label for="floatingInput">Name</label>
+											</div>
+			
+											<div class="form-floating my-1">
+												<input  class="form-control" type="text" name="surname" maxlength="50" value="{{ request.user.surname }}" id="id_surname">
+												<label for="floatingInput">Surname</label>
+											</div>
+															
+											<div class="input-group my-2">
+											<span class="input-group-text">Gender</span>
+											<select name="gender" id="id_gender" class="form-select form-control ">
+												<option value="{{ request.user.gender }}">current : {{ request.user.gender }}</option>
+												<option value="Female">Female</option>
+												<option value="Male">Male</option>
+												<option value="Other">Other</option>
+											</select>
+											</div>
+			
+											<div class="pt-3">
+												<a href="{% url 'password_change' %}"><button class="btn app-btn-secondary m-1" type="button">Change your password</button></a>
+												<a href="{% url 'password_reset' %}"><button class="btn app-btn-secondary m-1" type="button">Request a password reset</button></a>
+											</div>
+
+										</div>
+
+										<div class="col-12 pt-3">
+			
+											{% for field in form %}
+											<p>
+											{% for error in field.errors %}
+											<p style="color: red">{{ error }}</p>
+											{% endfor %}
+											</p>
+											{% endfor %}
+											{% if form.non_field_errors %}
+											<div style="color: red">
+											<p>{{form.non_field_errors}}</p>
+											</div>
+											{% endif %}
+										</div>
+										<div class="mt-3">
+										    <button type="submit" class="btn app-btn-primary" >Save Changes</button>
+										</div>
+										</div>
+									</div>
+								</form>
+						    </div><!--//app-card-body-->
+						    
+						</div><!--//app-card-->
+	                </div>
+	            </div><!--//row-->
+
+            <hr class="my-4" id="privacy_section">
+                <div class="row g-4 settings-section">
+	                <div class="col-12 col-md-4">
+		                <h3 class="section-title">Data &amp; Privacy</h3>
+		                <div class="section-intro">Settings section intro goes here. Morbi vehicula, est eget fermentum ornare. </div>
+	                </div>
+	                <div class="col-12 col-md-8">
+		                <div class="app-card app-card-settings shadow-sm p-4">						    
+						    <div class="app-card-body">
+							    <form method="POST" class="settings-form" action="{% url 'account:settings' page='privacy' %}">
+							    	{% csrf_token %}
+									<div class="input-group my-2">
+									<span class="input-group-text">Personal info<br>(name and surname)</span>
+									<select name="visibility_personal_info" id="id_" class="form-select form-control ">
+										<option value="{{ request.user.settings.visibility_personal_info }}">current : {{ request.user.settings.visibility_personal_info }}</option>
+										<option value="Friends">Friends</option>
+										<option value="Anyone">Anyone</option>
+									</select>
+									</div>
+
+									<div class="input-group my-2">
+									<span class="input-group-text">Email</span>
+									<select name="visibility_email" id="id_" class="form-select form-control ">
+										<option value="{{ request.user.settings.visibility_email }}">current : {{ request.user.settings.visibility_email }}</option>
+										<option value="No One">No One</option>
+										<option value="Friends">Friends</option>
+										<option value="Anyone">Anyone</option>
+									</select>
+									</div>
+
+									<div class="input-group my-2">
+									<span class="input-group-text">Gender</span>
+									<select name="visibility_gender" id="id_" class="form-select form-control ">
+										<option value="{{ request.user.settings.visibility_gender }}">current : {{ request.user.settings.visibility_gender }}</option>
+										<option value="No One">No One</option>
+										<option value="Friends">Friends</option>
+										<option value="Anyone">Anyone</option>
+									</select>
+									</div>
+									<div class="input-group my-2">
+									<span class="input-group-text">Birthday</span>
+									<select name="visibility_dob" id="id_" class="form-select form-control ">
+										<option value="{{ request.user.settings.visibility_dob }}">current : {{ request.user.settings.visibility_dob }}</option>
+										<option value="No One">No One</option>
+										<option value="Friends">Friends</option>
+										<option value="Anyone">Anyone</option>
+									</select>
+									</div>
+
+									<div class="input-group my-2">
+									<span class="input-group-text">Biography</span>
+									<select name="visibility_bio" id="id_" class="form-select form-control ">
+										<option value="{{ request.user.settings.visibility_bio }}">current : {{ request.user.settings.visibility_bio }}</option>
+										<option value="Friends">Friends</option>
+										<option value="Anyone">Anyone</option>
+									</select>
+									</div>
+
+									<div class="input-group my-2">
+									<span class="input-group-text">Friend list</span>
+									<select name="visibility_friend_list" id="id_" class="form-select form-control ">
+										<option value="{{ request.user.settings.visibility_friend_list }}">current : {{ request.user.settings.visibility_friend_list }}</option>
+										<option value="No One">No One</option>
+										<option value="Friends">Friends</option>
+										<option value="Anyone">Anyone</option>
+									</select>
+									</div>	
+
+									<div class="input-group my-2">
+									<span class="input-group-text">Social Links</span>
+									<select name="visibility_social_links" id="id_" class="form-select form-control ">
+										<option value="{{ request.user.settings.visibility_social_links }}">current : {{ request.user.settings.visibility_social_links }}</option>
+										<option value="Friends">Friends</option>
+										<option value="Anyone">Anyone</option>
+									</select>
+									</div>
+
+									<div class="input-group my-2">
+									<span class="input-group-text">Timeline</span>
+									<select name="visibility_timeline" id="id_" class="form-select form-control ">
+										<option value="{{ request.user.settings.visibility_timeline }}">current : {{ request.user.settings.visibility_timeline }}</option>
+										<option value="Friends">Friends</option>
+										<option value="Anyone">Anyone</option>
+									</select>
+									</div>	
+
+									<div class="input-group my-2">
+									<span class="input-group-text">Who can send<br>you a friend request</span>
+									<select name="friendship" id="id_" class="form-select form-control ">
+										<option value="{{ request.user.settings.friendship }}">current : {{ request.user.settings.friendship }}</option>
+										<option value="Friends">Friends</option>
+										<option value="Mutual Friends">Mutual Friends</option>
+										<option value="Anyone">Anyone</option>
+									</select>
+									</div>	
+
+									<div class="input-group my-2">
+									<span class="input-group-text">Who can send<br>you a message</span>
+									<select name="private_chat_perm" id="id_" class="form-select form-control ">
+										<option value="{{ request.user.settings.private_chat_perm }}">current : {{ request.user.settings.private_chat_perm }}</option>
+										<option value="Friends">Friends</option>
+										<option value="Mutual Friends">Mutual Friends</option>
+										<option value="Anyone">Anyone</option>
+									</select>
+									</div>	
+
+									<div class="input-group my-2">
+									<span class="input-group-text">Who can add<br>you to a group</span>
+									<select name="public_chat_perm" id="id_" class="form-select form-control ">
+										<option value="{{ request.user.settings.public_chat_perm }}">current : {{ request.user.settings.public_chat_perm }}</option>
+										<option value="Friends">No One</option>
+										<option value="Friends">Friends</option>
+										<option value="Anyone">Anyone</option>
+									</select>
+									</div>	
+									<div class="col-12 pt-3">
+		
+										{% for field in form %}
+										<p>
+										{% for error in field.errors %}
+										<p style="color: red">{{ error }}</p>
+										{% endfor %}
+										</p>
+										{% endfor %}
+										{% if form.non_field_errors %}
+										<div style="color: red">
+										<p>{{form.non_field_errors}}</p>
+										</div>
+										{% endif %}
+									</div>
+									<div class="mt-3">
+									    <button type="submit" class="btn app-btn-primary" >Save Changes</button>
+									</div>
+							    </form>
+						    </div><!--//app-card-body-->						    
+						</div><!--//app-card-->
+	                </div>
+                </div><!--//row-->
+            <hr class="my-4" id="notifications_section">
+                <div class="row g-4 settings-section px-3">
+	                <div class="col-12 col-md-4">
+		                <h3 class="section-title">Notifications</h3>
+		                <div class="section-intro">Settings section intro goes here. Duis velit massa, faucibus non hendrerit eget.</div>
+	                </div>
+	                <div class="col-12 col-md-8">
+		                <div class="app-card app-card-settings shadow-sm p-4">						    
+						    <div class="app-card-body">
+							    <form method="POST" class="settings-form" action="{% url 'account:settings' page='notifications' %}">
+							    	{% csrf_token %}
+									<div class="form-check form-switch mb-3">
+										<input class="form-check-input" type="checkbox" id="settings-switch-4" {% if request.user.settings.message_notifications %}checked{% endif %} name="message_notifications">
+										<label class="form-check-label" for="settings-switch-4">Messages</label>
+									</div>
+									<div class="form-check form-switch mb-3">
+										<input class="form-check-input" type="checkbox" id="settings-switch-5" {% if request.user.settings.group_message_notifications %}checked{% endif %} name="group_message_notifications">
+										<label class="form-check-label" for="settings-switch-5">Group messages</label>
+									</div>
+								    <div class="form-check form-switch mb-3">
+										<input class="form-check-input" type="checkbox" id="settings-switch-1" {% if request.user.settings.friend_request_notifications %}checked{% endif %} name="friend_request_notifications">
+										<label class="form-check-label" for="settings-switch-1">Friend requestss</label>
+									</div>
+								    <div class="form-check form-switch mb-3">
+										<input class="form-check-input" type="checkbox" id="settings-switch-1" {% if request.user.settings.like_notifications %}checked{% endif %} name="like_notifications">
+										<label class="form-check-label" for="settings-switch-1">Likes</label>
+									</div>
+									<div class="form-check form-switch mb-3">
+										<input class="form-check-input" type="checkbox" id="settings-switch-3" {% if request.user.settings.comment_notifications %}checked{% endif %} name="comment_notifications">
+										<label class="form-check-label" for="settings-switch-3">Comments</label>
+									</div>
+									<div class="form-check form-switch mb-3">
+										<input class="form-check-input" type="checkbox" id="settings-switch-2" {% if request.user.settings.push_notifications %}checked{% endif %} name="push_notifications">
+										<label class="form-check-label" for="settings-switch-2">Web browser push notifications</label>
+									</div>
+									<div class="col-12 pt-3">
+		
+										{% for field in form %}
+										<p>
+										{% for error in field.errors %}
+										<p style="color: red">{{ error }}</p>
+										{% endfor %}
+										</p>
+										{% endfor %}
+										{% if form.non_field_errors %}
+										<div style="color: red">
+										<p>{{form.non_field_errors}}</p>
+										</div>
+										{% endif %}
+									</div>
+									<div class="mt-3">
+									    <button type="submit" class="btn app-btn-primary" >Save Changes</button>
+									</div>
+							    </form>
+						    </div><!--//app-card-body-->						    
+						</div><!--//app-card-->
+	                </div>
+                </div><!--//row-->
+            <hr class="my-4">
+            	<p class="tillium text-black">This action cannot be undone so think it through</p>
+            	<a href="{% url 'account:delete' %}"><button class="btn btn-lg btn-danger">DELETE ACCOUNT</button></a>
+            <hr class="my-4">
+        </div>
+
+
+	</section>
+</div>
+
+{% endblock %}

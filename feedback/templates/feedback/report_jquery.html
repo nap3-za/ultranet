@@ -1,0 +1,38 @@
+<script type="text/javascript">
+        function report(reason, obj_type, obj_id) {
+            var url = "{% url 'report' %}";
+
+            payload = {
+                "csrfmiddlewaretoken": "{{ csrf_token }}",
+                "obj": obj_type,
+                "obj_id": obj_id,
+                "reason": reason,
+            };
+            $.ajax({
+                type: 'POST',
+                dataType: "json",
+                url: url,
+                timeout: 5000,
+                data: payload,
+                success: function(data) {
+                    console.log("SUCCESS")
+                },
+                error: function(data) {
+                    console.error("ERROR...")
+                },
+                complete: function(data){
+                    console.log(data)
+                    if (data.responseJSON.response == "Successful") {
+                        alert("Report sent successfully , thank you for making Utranet a better place :)")
+                    }
+                    else if (data.responseJSON.response == "Inconsistent data") {
+                        location = "{% url '400' %}"
+                    }
+                    else if (data.responseJSON.response == "Inconsistent") {
+                        location = "{% url '400' %}"
+                    }
+
+                }
+            });
+        }
+</script>

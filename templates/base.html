@@ -1,0 +1,54 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+	<link rel="icon" href="">
+	<title>Ultranet.com | {% block title %}{% endblock title %}</title>
+  
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="description" content="Ultranet - Social Network For Tech Enthusiasts">
+    <meta name="author" content="Nape Ntsoane">   
+    
+    <!-- FontAwesome JS-->
+    <script defer src="{% static 'assets/plugins/fontawesome/js/all.min.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.css' %}">
+
+    <!-- App CSS -->  
+    <link id="theme-style" rel="stylesheet" href="{% static 'assets/theme/css/portal.css' %}">
+    <link id="theme-style" rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+
+    <script type="text/javascript" src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+
+</head> 
+
+<body class="app">  
+
+  <!-- Navigational bar -->
+  {% include 'snippets/header.html' %}
+  
+  <div class="app-wrapper">
+    {% block content %}
+    {% endblock content %}  
+
+    {% include 'snippets/footer.html' %}  
+  </div>
+
+
+	<!-- Javascript files -->
+    <script src="{% static 'assets/theme/js/app.js' %}"></script> 
+    <script src="{% static 'assets/plugins/popper.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>  
+
+	{% if connect_general and request.user.is_authenticated %}
+		{% include 'main_asgi/general.html' %}
+	{% endif %}
+
+	
+</body>
+</html>
+

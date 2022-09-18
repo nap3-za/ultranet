@@ -1,0 +1,283 @@
+<!-- PrivateChatRoom -->
+<!-- Chat room for 1 on 1 conversations -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title%}
+Chat 
+{% endblock %}
+
+{% block content %}
+
+<style type="text/css">
+{% include 'chat/chat.css' %}
+</style>
+
+<script src="{% static 'assets/jquery/jquery.min.js' %}"></script>
+
+<style type="text/css">
+	.chat-message-input-container{
+		outline: none;
+		box-shadow: none;
+	}
+	.chat-message-input{
+		outline: none;
+		border: 1px solid #fff;
+		border-top: 2px solid var(--main-background-color);
+		
+	}
+	.username-span{
+		font-weight: 600;
+		margin-top: 0px;
+		margin-bottom: auto;
+		margin-left: 5px;
+		margin-right: 5px;
+	}
+	.friend-message-span{
+		font-weight: 380;
+		margin-top: 0px;
+		margin-bottom: auto;
+		margin-left: 5px;
+		margin-right: 5px;
+		font-size: 0.6em;
+		color: var(--light-primary-text-color);
+	}
+	.timestamp-span{
+		font-weight: 400;
+		font-size: 0.8em;
+		color: var(--secondary-text-color);
+	}
+	.timestamp-span:hover{
+		cursor: pointer;
+	}
+	.msg-p{
+		font-weight: 450;
+		margin-top: 5px;
+		margin-bottom: auto;
+		margin-left: 5px;
+		margin-right: 5px;
+		white-space: normal;
+		-ms-word-break: break-all;
+		word-break: break-all;
+	}
+	.profile-image{
+		width: 33px;
+		height: 33px;
+		margin-top: 0px;
+		margin-bottom: auto;
+	}
+	.profile-image-small{
+		width: 25px;
+		height: 25px;
+		margin-top: 0px;
+		margin-bottom: auto;
+		margin-right: 5px;
+	}
+	.profile-image:hover{
+		cursor: pointer;
+	}
+	.profile-image-small:hover{
+		cursor: pointer;
+	}
+	.username-span:hover{
+		cursor: pointer;
+	}
+	.material-icons:hover{
+		cursor: pointer;
+	}
+	.card {
+		border-radius: 12px;
+	}
+	
+	#id_chatroom_loading_spinner{
+		position: absolute;
+	}
+	.friend-container:hover{
+		background: var(--main-background-color);
+		cursor: pointer;
+	}
+	.friends-list-container{
+		max-height: 500px;
+		overflow-y: scroll;
+	}
+</style>
+
+
+<div class="container">
+	<div class="row">
+		<div class="col-sm-9 m-0 p-2">
+			<div class="card" id="id_chatroom_card">
+				<div class="d-flex flex-row align-items-center card-header pt-2 pb-0 m-0" id="id_room_title">
+				<a class="d-flex flex-row flex-grow-1" target="_blank" id="id_user_info_container">
+					<img class="profile-image rounded-circle img-fluid" id="id_other_user_profile_image" src="{% static 'codingwithmitch/dummy_image.png' %}">
+					<h3 class="p-1" id="id_other_username"></h3>
+				</a>
+				<a class="flex-shrink-1" href="" id="delete_{{ room.id }}" onclick="delete_chat()"><button class="btn" type="button"><span class="material-icons">delete</span></button></a>
+				</div>
+				<div class="card-body p-1">
+					<div class="" id="">
+						<div class="d-flex flex-row justify-content-center" id="id_chatroom_loading_spinner_container">
+							<div class="spinner-border text-primary"  id="id_chatroom_loading_spinner" role="status"  style="display: none; ">
+								<span class="sr-only"></span>
+							</div>
+						</div>
+						<main class="content">
+							<div class="container p-0">
+								<div class="card">
+									<div class="row g-0">
+										<div class="col-12 col-lg-7 col-xl-9">
+											<div class="position-relative" id="id_chat_log">
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</main>
+						<span class="{% if not debug %}d-none{% endif %} page-number" id="id_page_number">1</span>
+						
+						<div class="flex-grow-0 border border-dark rounded">
+							<div class="input-group">
+								<textarea class="flex-grow-1 chat-message-input border" id="id_chat_message_input" rows="2"></textarea>
+								<button class="btn inout-group-append" id="id_chat_message_submit"><span class="material-icons">send</span></button>
+							</div>
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</div>
+
+<!-- 		<div class="col-sm-3 m-0 p-2">
+			<div class="card">
+				<div class="card-body p-1">	
+					<div class="d-flex flex-column friends-list-container ">
+						{% for x in m_and_f %}
+						<div class="d-flex flex-row p-2 friend-container flex-grow-1" onclick="onSelectFriend('{{x.friend.id}}')" id="id_friend_container_{{x.friend.id}}">
+							<img class="profile-image rounded-circle img-fluid" id="id_friend_img_{{x.friend.id}}" src="{% static 'codingwithmitch/dummy_image.png' %}" >
+							<div class="d-flex flex-column">
+								<span class="username-span">{{x.friend.username}}</span>
+								<span class="friend-message-span">{{x.message|truncatechars:20}}</span>
+							</div>
+						</div>
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+		</div> -->
+	</div>
+</div>
+
+
+<!-- Client Error MODAL -->
+<button type="button" id="id_trigger_client_error_modal" class="d-none btn btn-primary" data-toggle="modal" data-target="#id_client_error_modal">
+</button>
+<div class="modal fade" id="id_client_error_modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Socket Client Error</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="id_client_error_modal_body">Something went wrong.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="id_client_error_modal_close_btn">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Client Error MODAL -->
+
+<script type="text/javascript">
+	
+
+
+	function preloadCallback(src, elementId){
+		var img = document.getElementById(elementId)
+		img.src = src
+	}
+
+	function preloadImage(imgSrc, elementId){
+		// console.log("attempting to load " + imgSrc + " on element " + elementId)
+		var objImagePreloader = new Image();
+		objImagePreloader.src = imgSrc;
+		if(objImagePreloader.complete){
+			preloadCallback(objImagePreloader.src, elementId);
+			objImagePreloader.onload = function(){};
+		}
+		else{
+			objImagePreloader.onload = function() {
+				preloadCallback(objImagePreloader.src, elementId);
+				//    clear onLoad, IE behaves irratically with animated gifs otherwise
+				objImagePreloader.onload=function(){};
+			}
+		}
+	}
+
+	/*
+		Build a <p> for messages using markdown
+		https://github.com/markdown-it/markdown-it
+	*/
+	function validateText(str)
+	{
+		var md = window.markdownit({
+			highlight: function (str, lang) {
+				if (lang && hljs.getLanguage(lang)) {
+					try {
+						return '<pre class="hljs"><code>' +
+							hljs.highlight(lang, str, true).value +
+							'</code></pre>';
+					} catch (__) {}
+				}
+				return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+			},
+			linkify: true,
+		});
+		var result = md.render(str);
+		return result
+	}
+</script>
+
+<script src="{% static 'lib/reconnecting-websocket.js' %}"></script>
+{% include 'main_asgi/private_room.html' %}
+<script>
+	function createOrReturnPrivateChat(id){
+		payload = {
+			"csrfmiddlewaretoken": "{{ csrf_token }}",
+			"user2_id": id,
+		}
+		$.ajax({
+			type: 'POST',
+			dataType: "json",
+			url: "{% url 'chat:create-or-return-private-chat' %}", // production
+			data: payload,
+			timeout: 5000,
+			success: function(data) {
+				console.log("SUCCESS", data)
+				if(data['response'] == "Successfully got the chat."){
+					chatroomId = data['chatroom_id']
+					OnGetOrCreateChatroomSuccess(chatroomId)
+				}
+				else if(data['response'] != null){
+				}
+			},
+			error: function(data) {
+				console.error("ERROR...", data)
+			},
+			complete: function(data) {
+				console.log("Chat created/fetched successfully")
+			}
+		});
+	}
+
+	function OnGetOrCreateChatroomSuccess(chatroomId){
+			var url = "{% url 'chat:private_room' %}?room_id=" + chatroomId
+			var win = window.location.replace(url)
+			window.open(url) // for new tab
+		}
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+<script type="text/javascript">
+    function removeFriend(id) {
+        payload = {
+            // This is how you include the csrf token in ajax
+            // You have to do this everytime you make a post request
+            "csrfmiddlewaretoken": "{{ csrf_token }}",
+            "receiver_user_id": id,
+        },
+        $.ajax ({
+            type: "POST", 
+            dataType: "json",
+            timeout: 5000,
+            url: "{% url 'friend:unfriend' %}",
+            data: payload,
+            success: function (data) {
+                //
+            },
+            error: function (data) {
+                console.error("[-] Something went wrong" )
+            },
+            complete: function (data) {
+                location.reload()
+            },
+        })
+    }
+</script>

@@ -1,0 +1,561 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Details
+{% endblock title %}
+
+{% block content %}
+<style type="text/css">
+
+
+
+.bd-placeholder-img {
+	font-size: 1.125rem;
+	text-anchor: middle;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+.image-container{
+	max-width: 70px;
+	height: auto;
+}
+.ml-3 {
+    margin-left: 12px;
+}
+.font-size-m {
+    font-size: 25px;
+}
+
+
+.profile-image {
+	height: 300px;
+	width: 300px;
+}
+
+.controls {
+	padding-left: 25px;
+	padding-top: 0px;
+	margin-top: 0px;
+}
+
+.friend {
+	padding-left: 25px;
+	padding-top:  0px;
+}
+
+
+  .bg-classic {
+      background-color: #061b44;
+  }
+  .bd-placeholder-img {
+    font-size: 1.125rem;
+    text-anchor: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+
+  @media (min-width: 768px) {
+	  .bd-placeholder-img-lg {
+	  font-size: 3.5rem;
+	   }
+
+  }
+    .image-container{
+    	max-width: 70px;
+    	height: auto;
+    }
+    .pp-image {
+        width: 35px;
+        height: 35px;
+        margin: 7px 10px 7px 7px;
+    }
+.ml-3 {
+    margin-left: 12px;
+}
+	.font-size-m {
+	    font-size: 25px;
+	}
+
+	.btn-github {
+		background-color: #181818;
+	}
+
+	.btn-stack {
+		background-color: #D79F25;
+	}
+
+	.btn-youtube {
+		background-color: red;
+	}
+
+	.btn-insta {
+		background-color: #C10968;
+	}
+	.mh {
+		height: max;
+	}
+
+</style>
+
+
+
+<div class="container px-1 py-1">
+	<section class="bg-light pt-3" id="account">
+		<div class="container-xl">	
+		    <div class="row justify-content-center">
+
+		        <div class="col-12 col-lg-6 col-xl-6 col-xxl-6">
+		            <div class="card">
+		            	<div class="card-header">
+		            		<div class="d-flex flex-row">
+		            			<div class="flex-grow-1">
+		                        	<h4 class="my-0 tillium text-start text-black">
+			                        	{{ subject.username }}
+			                        	{% if subject_settings.gender %}
+					                        {% if subject.gender is 'Male' %}
+					                        	<i class="fa fa-male"></i> 
+					                    	{% elif subject.gender is 'Female' %}
+					                    		<i class="fa fa-female"></i> 
+					                    	{% else %}
+					                    		<i class="fa fa-transgender"></i> 
+					                    	{% endif %}
+					                    {% endif %}
+				                    </h4>  	            				
+		            			</div>
+
+		            			<div class="flex-shrink-1">
+									{% if is_self %}
+								    	<a class="btn text-end" href="{% url 'account:update_profile' %}"><i class="fa fa-user-cog fa-lg"></i></a>
+								    {% else %}
+										{% if is_friend %}
+										<a class="btn btn-danger btn-sm" href="#" id="id_unfriend_btn"><i class="fa fa-user-minus"></i></a>
+										<!-- Them to you -->
+										{% elif request_sent == 0 %}
+											<a class="btn btn-success btn-sm" onclick='triggerAcceptFriendRequest("{{pending_fr}}")' href="#"><i class="fa fa-check-circle"></i></a>
+											<a class="btn btn-danger btn-sm" id="id_cancel_{{id}}" onclick='triggerDeclineFriendRequest("{{pending_fr}}")' href="#"><i class="fa fa-times-circle"></i></a>
+										<!-- You to them -->
+										{% elif request_sent == 1 %}
+											<a class="btn btn-danger btn-sm" id="id_cancel_friend_request_btn" href="#"><i class="fa fa-user-times"></i></a>
+										<!-- No request sent -->
+										{% elif request_sent == -1 or subject_settings.friendship %}
+											<a class="btn app-btn-primary btn-sm" id="id_send_friend_request_btn" href="#"><i class="fa fa-user-plus"></i></a>
+										{% else %}
+										{% endif %}
+
+								    {% endif %}
+		            			</div>
+		            		</div>
+	   
+
+
+		            	</div>
+		                <div class="card-body">
+		                	<div class="col-12">
+		                		<center>
+		                			<img src="{{ subject.profile_image.url }}" class=" rounded-circle img-thumbnail profile-image " alt="profile-image">
+		                		</center>		
+		                	</div>
+
+		                	<div class="col-12 text-center py-3">
+			                    {% if subject_settings.no_social_links and is_self %}
+				                    <ul class="list-inline mt-1 mb-0">
+				                        <li class="list-inline-item px-2">
+				                            <a href="{% url 'account:update_profile' %}" class=" text-center border-secondary text-secondary"><i class="fab fa-github fa-lg"></i></a>
+				                        </li>
+
+				                        <li class="list-inline-item px-2">
+				                            <a href="{% url 'account:update_profile' %}" class="social-list-item text-center border-secondary text-secondary"><i class="fab fa-stack-overflow fa-lg"></i></a>
+				                        </li>
+				                        <li class="list-inline-item px-2">
+				                            <a href="{% url 'account:update_profile' %}" class="social-list-item text-center border-primary text-primary"><i class="fab fa-youtube fa-lg"></i></a>
+				                        </li>
+				                        <li class="list-inline-item px-2">
+				                            <a href="{% url 'account:update_profile' %}" class="social-list-item text-center border-primary text-primary"><i class="fab fa-instagram fa-lg"></i></a>
+				                        </li>
+				                    </ul>   
+			               		{% elif subject_settings.social_links %}    
+				                    <ul class="social-list list-inline mt-1 mb-0">
+				                    	{% if subject.github %}
+				                        <li class="list-inline-item px-2">
+				                            <a href="www.github.com/{{ subject.github }}/" class="social-list-item text-center border-secondary text-secondary"><i class="fab fa-github fa-lg"></i></a>
+				                        </li>
+				                        {% endif %}
+
+				                        {% if subject.stack %}
+				                        <li class="list-inline-item px-2">
+				                            <a href="www.stackoverflow.com/{{ subject.stack }}/" class="social-list-item text-center border-secondary text-secondary"><i class="fab fa-stack-overflow fa-lg"></i></a>
+				                        </li>
+				                        {% endif %}
+
+				                        {% if subject.youtube %}
+				                        <li class="list-inline-item px-2">
+				                            <a href="{{ subject.youtube }}" class="social-list-item text-center border-primary text-primary"><i class="fab fa-youtube fa-lg"></i></a>
+				                        </li>
+				                        {% endif %}
+
+				                        {% if subject.insta %}
+				                        <li class="list-inline-item px-2">
+				                            <a href="www.instagram.com/{{ subject.insta }}/" class="social-list-item text-center border-primary text-primary"><i class="fab fa-instagram fa-lg"></i></a>
+				                        </li>
+				                        {% endif %}
+				                    </ul> 
+								{% endif %}
+		                	</div>
+
+			                <div class="d-flex justify-content-center border-top border-bottom w-100">
+			                    <p class="text-black bold my-4 noto-sans">
+			                        {{ subject.bio|linebreaksbr }}           
+			                    </p>
+		                	</div>
+
+		                    <div class="col-12">
+			                    <div class="px-lg-3 px-xl-3 px-xxl-3 mt-4">
+
+			  						{% if subject_settings.email %}
+			                        <p class="text-dark my-1 font-13 tillium"><strong><i class="fa fa-envelope"></i> </strong> <span class="ms-2">{{ subject.email }}</span></p>
+			                        {% endif %}
+
+				                    {% if subject_settings.personal_info %}
+			                        <p class="text-dark my-1 font-13 tillium"><strong><i class="fa fa-id-card"></i> </strong> <span class="ms-2">{{ subject.name }}&nbsp;{{ subject.surname }}</span></p>
+			                    	{% endif %}
+
+				                    {% if subject_settings.dob %}
+			                        <p class="text-dark my-1 font-13 tillium"><strong><i class="fa fa-birthday-cake"></i> </strong> <span class="ms-2">{{ subject.dob.day }} / {{ subject.dob.month }}</span></p>
+			                    	{% endif %}
+
+			                    </div>                          
+							</div> 
+		                </div>   
+
+	                    <div class="card-footer">
+	                    	<div class="d-flex flex-row">
+		            			<div class="flex-grow-1">
+									{% if subject_settings.friends %}
+										<a href="{% url 'friend:friend_list' user_id=subject.id %}" class="text-decoration-none btn btn-sm btn-outline-secondary"><i class="fa fa-user-friends"></i>  {{ friends|length }}</a>
+
+										{% if is_self %}
+											&nbsp;&nbsp;<a href="{% url 'friend:friend_requests' user_id=subject.id %}" class="text-decoration-none btn btn-sm btn-outline-secondary">
+												<i class="fa fa-user-plus"></i>  {{fr_count}}
+											</a> 
+										{% endif %}
+									{% endif %}
+								</div>
+								<div class="flex-shrink-1">
+									{% if not is_self %}
+										<div class="dropdown">
+			                                <a class="dropdown-toggle btn" id="dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false"><i class="fa fa-eye-slash "></i></a>
+			                                <ul class="dropdown-menu" aria-labelledby="dropdown-toggle">
+			                                    <li class="dropdown-item my-0 py-0"><span class="text-secondary py-0">Please select one of the following reasons</span></li>
+			                                    <li><hr class="dropdown-divider"></li>
+			                                    <li class="dropdown-item" onclick="report('Contains sensetive/inappropriate content', 'Account',{{subject.id}})">Contains sensetive/inappropriate content</li>
+			                                    <li class="dropdown-item" onclick="report('Racist', 'Account',{{subject.id}})">Racist</li>
+			                                    <li class="dropdown-item" onclick="report('False facts', 'Account',{{subject.id}})">False facts</li>
+			                                </ul>
+			                            </div>
+									{% endif %}
+
+									{% if is_friend or subject_settings.chat_perm %}
+										{% if not is_self %}
+											<a class="btn btn-sm text-end" onclick="createOrReturnPrivateChat('{{id}}')" href="#"><i class="fa fa-comment-alt fa-lg"></i></a>
+										{% endif %}
+									{% endif %}
+
+								</div>
+							</div>
+						</div>
+		            </div> <!-- end card -->
+		        </div> 
+		    </div>
+
+		    {% if subject_settings.timeline %}
+			    <div class="row mx-lg-3 mx-xl-3 my-3">
+			    	{% if contents %}
+				        <div class="row m-2 mb-0 mt-0">
+				        	{% for content in contents %}
+						        	<!-- content -->
+						        <div class="row my-1">
+						            <div class="col-lg-7 col-md-12 col-sm-12 px-0 mx-0">
+						            	<div class="border rounded p-1">
+
+						            		<!-- content author panel -->
+											<div class="d-flex flex-row border-bottom">
+						                        <div class="flex-grow-1">
+						                            <a href="{% url 'account:details' subject_username=content.0.author.username %}" class="text-light font-weight-bold mb-0">
+						                            {% if content.0.author.profile_image %}
+						                            <img class="pp-image border border-dark rounded rounded-circle" src="{{ content.0.author.profile_image.url }}" alt="profile image" /><small>{% if content.0.author == request.user %}You{% else %}by {{ content.0.author }}{% endif %}</small></a>
+						                            {% endif %}
+						                            <small class="text-muted tillium">{{ content.0.timestamp.date }}</small>
+						                        </div>
+						                        <div class="d-flex flex-shrink-1">
+						                            <div class="dropdown">
+						                                <a class="dropdown-toggle btn" id="dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false"><i class="fa fa-eye-slash "></i></a>
+						                                <ul class="dropdown-menu" aria-labelledby="dropdown-toggle">
+						                                    <li class="dropdown-item my-0 py-0"><span class="text-secondary py-0">Please select one of the following reasons</span></li>
+						                                    <li><hr class="dropdown-divider"></li>
+						                                    <li class="dropdown-item" onclick="report('Contains sensetive/inappropriate content', 'Content',{{content.0.id}})">Contains sensetive/inappropriate content</li>
+						                                    <li class="dropdown-item" onclick="report('Racist', 'Content',{{content.0.id}})">Racist</li>
+						                                    <li class="dropdown-item" onclick="report('False facts', 'Content',{{content.0.id}})">False facts</li>
+						                                </ul>
+						                            </div>
+						                        </div>
+						                    </div> 
+
+						                    {% if content.0.title %}
+						                        <p class="display-6 text-black text-start fw-bold">{{ content.0.title }}</p>
+						                    {% endif %}
+						                    
+						                    <div class="px-1"><a href="{% url 'blog:content' content_id=content.0.id %}">
+						                        {% if content.0.content_type == 'Poll' %}
+						    						<div class="list rounded">
+						    							{% for value in content.0.choice_set.all %}
+						    							<div class="list-group-item list-group-item-action list-group-item-light"onclick="triggerSelect({{value.id}});">
+						    								<span class="text-black">{{ value.value }}</span>&nbsp;&nbsp;&nbsp;
+						    								<span>[ {{ value.votes.all|length }} ]</span>
+						    							</div>
+						                                <div class="progress mb-3">
+						                                    <progress value="{{ value.votes.all|length }}" max="{{ content.3 }}" style="width: 100%;"></progress>
+						                                </div>
+						    							{% endfor %}
+						    						</div>
+						                        {% elif content.0.content_type == 'Post' %}
+						                            {% if not content.title %}
+						                            <p class="bold noto-sans text-center text-black fs-4">{{ content.0.text|escape|linebreaksbr|truncatechars:250 }}</p>
+						                            {% else %}
+						                            <p class="bold noto-sans">{{ content.0.text|escape|linebreaksbr|truncatechars:250 }}</p>
+						                            {% endif %}
+						                        {% endif %}
+						                    </div></a>
+
+						                    <!-- interaction panel -->
+						                    <div class="d-flex flex-nowrap flex-row border-top">
+						                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span><i class="fa fa-thumbs-up fa-lg" onclick="triggerLike({{ content.0.id}}, 'like')"></i>&nbsp;{{ content.0.likes.all|length }}</span></button>
+						                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><span><i class="fa fa-thumbs-down fa-lg" onclick="triggerDisLike({{ content.0.id }}, 'dislike')"></i>&nbsp;{{ content.0.dislikes.all|length }}</span></button>
+						                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0" data-bs-toggle="modal" data-bs-target="#commentBackdropLive"><span class=""><i class="fa fa-comment-alt fa-lg text-black"></i>&nbsp;{{ content.0.comment_set.all|length }}</span></button>
+						                        <button type="button" class="flex-fill btn p-lg-2 p-sm-0 m-sm-0 pb-0 pt-0"><i class="fa fa-share fa-lg text-black"></i></span></button>
+						                    </div>
+						                </div>
+						            </div>
+
+						            <!-- comments -->
+						            <div class="col-lg-5 col-md-12 col-sm-12 px-0 mx-0">
+										<div class="mx-lg-1 mx-xl-1 mx-xxl-1 bg-white shadow-sm">
+										    <div class="">
+										        {% if content.2 %}
+										            {% for comment in content.2 %}
+										            
+										                <div class="p-1 border">
+										                    <div class="d-flex flex-row ">
+										                        <div class="flex-grow-1">
+										                            <a href="{% url 'account:details' subject_username=comment.0.author.username %}" class="text-dark font-weight-bold mb-0 pt-2 pl-1">
+										                                <img class="pp-image border border-dark rounded rounded-circle" src="{{ comment.0.author.profile_image.url }}" alt="profile image" /><small>{% if comment.1 %}You{% else %}{{ comment.0.author }}{% endif %}</small><small class="text-muted ml-3" style="font-size: 13px">{{ comment.0.timestamp.date }}</small>
+										                            </a>
+										                        </div>
+										                    </div>
+
+										                    <div class="mx-2 py-0 border-top border-bottom">
+										                        <p class="ml-3 mb-0 fw-bold text-black">{{ comment.0.text }}</p>
+										                    </div>
+
+										                    {% if comment.2 %}
+										                        <div class="ms-4">
+										                            <div class="border-start">
+										                                <div class="d-flex flex-row">
+										                                    <div class="flex-grow-1">
+										                                        <a href="{% url 'account:details' subject_username=comment.2.author.username %}" class="text-dark font-weight-bold mb-0 pt-2 pl-1">
+										                                            <img class="pp-image border border-dark rounded rounded-circle" src="{{ comment.2.author.profile_image.url }}" alt="profile image" />
+										                                            <small>
+										                                                {% if comment.2.author == request.user %}You{% else %}{{ comment.2.author }}{% endif %}
+										                                            </small>
+										                                            <small class="text-muted ml-3 " style="font-size: 13px">
+										                                                replied to {% if comment.0.author == request.user %}You{% else %}{{ comment.0.author }}{% endif %}
+										                                            </small>
+										                                        </a>
+										                                        <small class="text-muted ml-3" style="font-size: 13px">{{ comment.0.timestamp.date }}</small>
+										                                    </div>
+										                                </div>
+
+										                                <div class=" border-top">
+										                                    <p class="px-1 fw-bold text-black">{{ comment.2.text }}</p>
+										                                </div>
+										                            </div>
+										                        </div>
+										                    {% endif %}
+										                </div>
+
+										            {% endfor %}
+										        {% else %}
+										        {% endif %}
+										    </div>
+										</div>
+						            </div>
+
+
+									<div class="modal fade" id="commentBackdropLive" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="commentBackdropLiveLabel" aria-hidden="true">
+									    <div class="modal-dialog">
+									    	<form class="form" method="POST" action="{% url 'blog:create_comment' content_id=content.0.id reply=0 %}">{% csrf_token %}
+									            <div class="modal-content">
+									                <div class="modal-header">
+									                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+									                </div>
+									                <div class="modal-body">
+									                    <div class="card-header">
+												            <div class="form-floating">
+												                <input placeholder="Add A Comment" class="form-control" type="text" name="text" required="" id="id_text">
+												                <label for="floatingInput">Add A Comment</label>
+												            </div>
+									                    </div>
+
+									                    <div class="card-body mt-0 mb-0 p-0">
+									                    </div> <!-- End of card body-->
+									                </div>
+									                <div class="modal-footer">
+									                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+									                    <button type="submit" class="btn btn-primary">Comment</button>
+									                </div>
+									            </div>
+											</form>
+									    </div>
+									</div> 
+								</div>
+
+				            {% endfor %}
+				        </div>
+
+						<p class="text-center">
+							{% if contents.has_previous %}
+								<button class="btn btn-primary"><a class="text-light" href="?page={{ contents.previous_page_number }}">&laquo; Previous</a></button>
+							{% endif %}
+								<small class="tillium bold m-2 text-light">Page {{ contents.number }} of {{ contents.paginator.num_pages }}</small>
+							{% if contents.has_next %}
+								<button class="btn btn-primary m-2"><a class="text-light" href="?page={{ contents.next_page_number }}">Next &raquo;</a></button><br>
+							{% endif %}
+						</p>
+			        {% else %}
+						<div class="col-12 py-5 border">
+							<p class="display-3 text-center tauri text-dark">Nothing to see here</p>
+						</div>
+					{% endif %}
+				</div>
+		    {% endif %}
+		</div>
+	</section>
+</div>
+
+{% include 'blog/poll/select_jquery.html' %}
+{% include 'blog/snippets/interaction_jquery.html' %}
+
+<script type="text/javascript">
+
+
+    function triggerSelect(value_id, poll_id) {
+      select(value_id, poll_id);
+    }
+
+    function triggerLike(content_id, func, like_origin) {
+      like(content_id, func, like_origin)
+    }
+
+    function triggerDisLike(content_id, func, like_origin) {
+      like(content_id, func, like_origin)
+    }
+
+
+</script>
+
+<script type="text/javascript">
+
+	// called from base_js.html
+	//preloadImage("{{profile_image|safe}}", 'id_profile_image')
+
+	function onFriendRequestSent(){
+		location.reload();
+	}
+
+	function onFriendRequestCancelled(){
+		location.reload();
+	}
+
+	function onFriendRemoved(){
+		location.reload();
+	}
+
+	function onFriendRequestAccepted(){
+		location.reload();
+	}
+
+	function onFriendRequestDeclined(){
+		location.reload();
+	}
+
+
+	var sendFriendRequestBtn = document.getElementById("id_send_friend_request_btn")
+	if (sendFriendRequestBtn != null){
+		sendFriendRequestBtn.addEventListener("click", function(){
+			sendFriendRequest("{{id}}", onFriendRequestSent, "{{ subject.username }}")
+		})
+	}
+
+
+
+
+		// body...
+
+	var cancelFriendRequestBtn = document.getElementById("id_cancel_friend_request_btn")
+	if(cancelFriendRequestBtn != null){
+		cancelFriendRequestBtn.addEventListener("click", function(){
+			cancelFriendRequest("{{id}}", onFriendRequestCancelled)
+		})
+	}
+
+
+
+	var removeFriendBtn = document.getElementById("id_unfriend_btn")
+	if (removeFriendBtn != null){
+		removeFriendBtn.addEventListener("click", function(){
+			if (confirm("Are you sure you want to unfriend {{ subject.username }}?")==true) {
+				removeFriend("{{id}}")
+			}
+		})
+	}
+
+	function triggerAcceptFriendRequest(friend_request_id){
+		acceptFriendRequest(friend_request_id, onFriendRequestAccepted, "{{ subject.username }}")
+	}
+
+	function triggerDeclineFriendRequest(friend_request_id){
+		declineFriendRequest(friend_request_id, onFriendRequestDeclined)
+	}
+
+
+	function reloadRecipient(username) {
+		mainSock.send(JSON.stringify({
+			"command": "reload",
+			"recipient": username,
+		}));
+	}
+
+</script>
+
+
+{% if is_friend %}
+	{% include 'chat/snippets/create_or_return_private_chat.html' %}
+	{% include 'friend/unfriend_jquery.html' %}
+{% endif %}
+
+{% if not is_friend and not is_self %}
+	{% include 'friend/send_jquery.html' %}
+	{% include 'friend/accept_jquery.html' %}
+	{% include 'friend/decline_jquery.html' %}
+	{% include 'friend/cancel_jquery.html' %}
+{% endif %}
+
+{% if not is_self %}
+	{% include 'feedback/report_jquery.html' %}
+{% endif %}
+
+{% include 'blog/snippets/interaction_jquery.html' %}
+
+{% endblock content %}

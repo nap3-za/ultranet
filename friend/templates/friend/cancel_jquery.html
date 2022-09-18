@@ -1,0 +1,24 @@
+<script type="text/javascript">
+    function cancelFriendRequest(id) {  
+        payload = {
+            "csrfmiddlewaretoken": "{{ csrf_token }}",
+            "receiver_user_id": id, 
+        }
+        $.ajax({
+            type: "POST",
+            data: payload,
+            url: "{% url 'friend:cancel' %}",
+            timeout: 5000,  
+            success: function(data) {
+                location.reload()
+            },
+            error: function(data) {
+                console.error("[-] An error occured")
+            },
+            complete: function(data) {
+                location.reload()
+            },
+        })
+    }
+
+</script>

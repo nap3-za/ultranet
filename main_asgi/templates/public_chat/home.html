@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
+<style type="text/css">
+  .bg-classic {
+      background-color: #061b44;
+  }
+  .bd-placeholder-img {
+    font-size: 1.125rem;
+    text-anchor: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+
+  @media (min-width: 768px) {
+  .bd-placeholder-img-lg {
+  font-size: 3.5rem;
+    }
+  }
+  .image-container{
+    max-width: 70px;
+    height: auto;
+  }
+    .pp-image {
+        width: 35px;
+        height: 35px;
+        margin: 7px 10px 7px 7px;
+    }
+    .ml-3 {
+        margin-left: 12px;
+    }
+    .font-size-m {
+        font-size: 25px;
+    }
+
+  .b-example-divider {
+    height: 3rem;
+    background-color: rgba(0, 0, 0, .1);
+    border: solid rgba(0, 0, 0, .15);
+    border-width: 1px 0;
+    box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+  }
+
+  .bi {
+    vertical-align: -.125em;
+    fill: currentColor;
+  }
+
+  .feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    font-size: 2rem;
+    color: #fff;
+    border-radius: .75rem;
+  }
+
+  .icon-link {
+    display: inline-flex;
+    align-items: center;
+  }
+  .icon-link > .bi {
+    margin-top: .125rem;
+    margin-left: .125rem;
+    transition: transform .25s ease-in-out;
+    fill: currentColor;
+  }
+  .icon-link:hover > .bi {
+    transform: translate(.25rem);
+  }
+
+  .icon-square {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.5rem;
+    border-radius: .75rem;
+  }
+
+  .rounded-4 { border-radius: .5rem; }
+  .rounded-5 { border-radius: 1rem; }
+
+  .text-shadow-1 { text-shadow: 0 .125rem .25rem rgba(0, 0, 0, .25); }
+  .text-shadow-2 { text-shadow: 0 .25rem .5rem rgba(0, 0, 0, .25); }
+  .text-shadow-3 { text-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .25); }
+
+  .card-cover {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+  }
+
+  .b-example-divider {
+    height: 3rem;
+    background-color: rgba(0, 0, 0, .1);
+    border: solid rgba(0, 0, 0, .15);
+    border-width: 1px 0;
+    box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+  }
+
+</style>
+
+
+<div class="container px-1 py-1">
+  <h1 class="app-page-title">Chatrooms</h1>
+  <div class="row gy-4">
+    <!-- Create room -->
+    <div class="col-12 col-lg-6">
+      <div class="app-card app-card-account shadow-sm d-flex flex-column align-items-start">
+        {% for room in rooms %}
+        <div class="app-card-header p-3 border-bottom-0">
+            <div class="row align-items-center gx-3">
+              <div class="col-auto">
+                <div class="app-icon-holder">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-person" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M10 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm6 5c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                </svg>
+              </div><!--//icon-holder-->
+                    
+              </div><!--//col-->
+              <div class="col-auto">
+                <h4 class="app-card-title">{{ room.0.title }}</h4>
+              </div><!--//col-->
+            </div><!--//row-->
+        </div><!--//app-card-header-->
+
+        <div class="app-card-body px-4 w-100">
+          <div class="item border-bottom py-3">
+            <div class="row justify-content-between align-items-center">
+              <div class="col-12 mb-3">
+                <div class="item-label"><strong>Room name :</strong></div>
+                <div class="item-data">{{ room.0.room_name }}</div>
+              </div><!--//col-->
+              <div class="col-12 mb-3">
+                <div class="item-label"><strong>Room title:</strong></div>
+                <div class="item-data">{{ room.0.title }}</div>
+              </div><!--//col-->
+
+              <div class="col-12 mb-3">
+                <div class="item-label"><strong>Room accessibility:</strong></div>
+                <div class="item-data">{{ room.0.accessibility }}</div>
+              </div><!--//col-->
+
+              <div class="col-12 mb-3">
+                <div class="item-label"><strong>Room messages:</strong></div>
+                <div class="item-data">{{ room.2 }}</div>
+              </div><!--//col-->
+
+              {% if room.1 == 1 %}
+              <div class="col-12 mb-3">
+                <div class="item-label"><strong>Allowed friends:</strong></div>
+                {% for friend in room.3 %}
+                <div class="item-data">{{ friend.username }}</div>
+                {% endfor %}
+              </div><!--//col-->   
+              {% endif %}
+
+            </div><!--//row-->
+            <div class="d-flex flex-row justify-content-center align-items-center">
+              <a class="flex-fill text-decoration-none" href="{% url 'chat:public_room' room_name=room.0.room_name %}"><button class="btn btn-primary" type="button">Join</button></a>
+
+              <a class="flex-fill text-decoration-none" href="{% url 'chat:public_update' room_name=room.0.room_name %}"><button class="btn btn-primary" type="button">Update</button></a>
+
+              <a class="flex-fill text-decoration-none" href="{% url 'chat:public_reset' room_name=room.0.room_name %}"><button class="btn btn-primary" type="button">Reset</button></a>
+              <a class="flex-fill text-decoration-none" href="{% url 'chat:public_delete' room_id=room.0.id %}
+              "><button class="btn btn-danger" type="button">Delete</button></a>
+            </div>
+          </div><!--//item-->
+        </div><!--//app-card-body-->
+        {% endfor %}
+
+        {% if qualify %}
+          <div class="border-bottom py-3">
+            <div class="d-flex flex-row flex-nowrap">
+                <a class="flex-full" href="{% url 'chat:public_create' %}"><button class="btn btn-primary btn-md flex-fill" type="button" id="create-room-submit">create a chatroom</button></a>
+            </div><!--//row-->
+          </div><!--//item-->
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+      <div class="app-card app-card-account shadow-sm d-flex flex-column align-items-start">
+        <div class="app-card-header p-3 border-bottom-0">
+            <div class="row align-items-center gx-3">
+              <div class="col-auto">
+                <div class="app-icon-holder">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-person" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M10 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm6 5c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                </svg>
+              </div><!--//icon-holder-->
+                    
+              </div><!--//col-->
+              <div class="col-auto">
+                <h4 class="app-card-title">Join</h4>
+              </div><!--//col-->
+            </div><!--//row-->
+        </div><!--//app-card-header-->
+
+        <div class="app-card-body px-4 w-100">
+          <div class="item border-bottom py-3">
+            <div class="row justify-content-between align-items-center">
+              <div class="col-12">
+                <p class="dosis">To join a chatroom you must have the room id , if you don't have it ask the creator of the room to give it to you.Enter it in the field below and click join</p>
+                <div class="form-floating mb-3 input-group">
+                  <input type="text" name="room_id" class="form-control" maxlength="200" placeholder="Room id" id="join-room-input">
+                  <label for="floatingInput">Room id (a unique name for the room)</label>
+                  <button class="btn btn-primary btn-md input-group-append" type="button" id="join-room-submit">join</button>
+                </div>
+                {% for error in errors %}
+                <p style="color: red">{{ error }}</p>
+                {% endfor %}
+                
+                
+              </div><!--//col-->
+            </div><!--//row-->
+          </div><!--//item-->
+        </div><!--//app-card-body-->
+
+        <div class="app-card-footer p-4 mt-auto">
+          {% comment %} <a class="btn app-btn-secondary" href="{% url 'account:update' %}">Manage Profile</a> {% endcomment %}
+        </div><!--//app-card-footer--> 
+      </div><!--//app-card-->
+    </div>
+  </div>
+</div>
+
+<script>
+
+    document.querySelector('#join-room-submit').onclick = function(e) {
+    var roomName = document.querySelector('#join-room-input').value;
+    function join_room(room_name) {
+      var path = "http" + '://' + window.location.host + "/chat/room/" + room_name +'/'; 
+      location =  path;
+      
+    }
+    join_room(roomName);
+};
+
+</script>
+
+{% endblock %}
